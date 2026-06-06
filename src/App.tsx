@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { Link, NavLink, Navigate, Route, Routes, useNavigate, useParams, useLocation } from "react-router-dom";
 import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
 import { ArrowRight, BarChart3, BookOpen, BriefcaseBusiness, Building2, Calendar, CalendarClock, Check, ChevronRight, Clock, Compass, GraduationCap, Heart, LayoutDashboard, ListChecks, LogOut, MapPin, MessageSquare, Plus, Search, SlidersHorizontal, Trash2, User, X } from "lucide-react";
 import { db, firebaseReady } from "./lib/firebase";
@@ -77,8 +77,66 @@ function useApplications(userId?: string) {
   return { applications, loading };
 }
 
+function FloatingCompareBar() {
+  const { compareIds, clearCompare } = useCompare();
+  const { colleges } = useCatalog();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  if (compareIds.length === 0 || location.pathname === "/compare") return null;
+
+  const selectedColleges = colleges.filter((c) => compareIds.includes(c.id));
+
+  return (
+    <div className="fixed bottom-20 left-1/2 z-40 w-[90%] max-w-xl -translate-x-1/2 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-md md:bottom-6 md:w-full transition-all duration-300 animate-fade-in">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="grid size-9 place-items-center rounded-lg bg-blue-50 text-blue-600">
+            <BarChart3 size={18} />
+          </span>
+          <div>
+            <h4 className="text-xs font-bold text-slate-800">Comparing Colleges</h4>
+            <p className="text-[10px] text-slate-500 font-medium">
+              {compareIds.length} of 4 selected
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 ml-2">
+            {selectedColleges.map((c) => (
+              <span
+                key={c.id}
+                className="grid size-7 place-items-center rounded bg-slate-100 font-extrabold text-slate-700 text-[9px]"
+                title={c.name}
+              >
+                {initials(c.name)}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 justify-end">
+          <Button
+            variant="ghost"
+            className="text-xs font-bold hover:bg-slate-100 h-8 px-3 text-slate-500"
+            onClick={clearCompare}
+          >
+            Clear
+          </Button>
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-8 px-4 rounded-lg shadow-sm"
+            onClick={() => navigate("/compare")}
+            disabled={compareIds.length < 2}
+            title={compareIds.length < 2 ? "Select at least 2 colleges to compare" : "Compare Now"}
+          >
+            Compare Now
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Shell({ children }: { children: React.ReactNode }) {
   const { logout, profile, isDemo } = useAuth();
+  const { compareIds } = useCompare();
   return (
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
       <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-800 bg-[#0f172a] p-5 md:block text-slate-300">
@@ -87,7 +145,13 @@ function Shell({ children }: { children: React.ReactNode }) {
           CareerCompass
         </Link>
         <nav className="mt-8 grid gap-1">
-          {navItems.map((item) => <NavItem key={item.to} {...item} />)}
+          {navItems.map((item) => (
+            <NavItem 
+              key={item.to} 
+              {...item} 
+              badge={item.to === "/compare" && compareIds.length > 0 ? compareIds.length : undefined} 
+            />
+          ))}
         </nav>
         <div className="absolute bottom-5 left-5 right-5">
           <div className={cn("rounded-xl p-3.5 text-sm border transition-all duration-200", isDemo ? "bg-slate-900/50 border-blue-500/20" : "bg-slate-900/30 border-slate-800")}>
@@ -100,47 +164,70 @@ function Shell({ children }: { children: React.ReactNode }) {
           <Button variant="ghost" className="mt-3 w-full justify-start text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/10" onClick={logout}><LogOut size={17} /> {isDemo ? "Exit Demo" : "Sign out"}</Button>
         </div>
       </aside>
-      <main className="mx-auto max-w-7xl px-4 py-6 md:ml-64 md:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-6 md:ml-64 md:px-8">
+        {children}
+        <FloatingCompareBar />
+      </main>
       <nav className="fixed bottom-0 left-0 right-0 z-20 grid h-16 grid-cols-6 border-t border-slate-200 bg-white md:hidden">
-        {navItems.map((item) => <MobileNavItem key={item.to} {...item} />)}
+        {navItems.map((item) => (
+          <MobileNavItem 
+            key={item.to} 
+            {...item} 
+            badge={item.to === "/compare" && compareIds.length > 0 ? compareIds.length : undefined} 
+          />
+        ))}
       </nav>
     </div>
   );
 }
 
-function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: React.ElementType }) {
+function NavItem({ to, label, icon: Icon, badge }: { to: string; label: string; icon: React.ElementType; badge?: number }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+          "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
           isActive
             ? "bg-blue-600 text-white font-semibold shadow-md shadow-blue-500/10"
             : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
         )
       }
     >
-      <Icon size={18} />
-      {label}
+      <div className="flex items-center gap-3">
+        <Icon size={18} />
+        {label}
+      </div>
+      {badge !== undefined && (
+        <span className="grid size-5 place-items-center rounded-full bg-blue-500 text-[10px] font-extrabold text-white">
+          {badge}
+        </span>
+      )}
     </NavLink>
   );
 }
 
-function MobileNavItem({ to, label, icon: Icon }: { to: string; label: string; icon: React.ElementType }) {
+function MobileNavItem({ to, label, icon: Icon, badge }: { to: string; label: string; icon: React.ElementType; badge?: number }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         cn(
-          "grid place-items-center text-[10px] font-medium transition-all duration-150 py-1.5",
+          "grid place-items-center text-[10px] font-medium transition-all duration-150 py-1.5 relative",
           isActive ? "text-blue-600 font-bold" : "text-slate-500 hover:text-slate-800"
         )
       }
     >
       {({ isActive }) => (
         <>
-          <Icon size={20} className={cn("transition-transform duration-200", isActive && "scale-110")} />
+          <div className="relative">
+            <Icon size={20} className={cn("transition-transform duration-200", isActive && "scale-110")} />
+            {badge !== undefined && (
+              <span className="absolute -top-1 -right-2 grid h-4 min-w-4 place-items-center rounded-full bg-blue-500 px-1 text-[8px] font-extrabold text-white">
+                {badge}
+              </span>
+            )}
+          </div>
           <span className="mt-0.5">{label}</span>
         </>
       )}
@@ -1209,11 +1296,147 @@ function CollegeDetails() {
   );
 }
 
+function CollegeCompareSelector() {
+  const { colleges } = useCatalog();
+  const { compareIds, toggleCompare } = useCompare();
+  const [search, setSearch] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const available = colleges.filter(
+    (c) => !compareIds.includes(c.id) && c.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (compareIds.length >= 4) return null;
+
+  return (
+    <div className="relative w-full max-w-md z-20" ref={dropdownRef}>
+      <div className="relative">
+        <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+        <Input
+          className="pl-10 h-10 border-slate-200/80 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white"
+          placeholder="Search and add colleges to compare..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+        />
+        {search && (
+          <button
+            type="button"
+            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+            onClick={() => {
+              setSearch("");
+              setIsOpen(false);
+            }}
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      {isOpen && (
+        <Card className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto p-1.5 shadow-lg border border-slate-100 bg-white">
+          {available.length > 0 ? (
+            available.map((college) => (
+              <button
+                key={college.id}
+                type="button"
+                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg flex items-center justify-between transition-colors"
+                onClick={() => {
+                  toggleCompare(college.id);
+                  setSearch("");
+                  setIsOpen(false);
+                }}
+              >
+                <div>
+                  <p className="font-bold">{college.name}</p>
+                  <p className="text-[10px] text-slate-400 font-medium">{college.city}, {college.state}</p>
+                </div>
+                <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full">+ Add</span>
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-3 text-center text-xs text-slate-400 font-medium">
+              No matching colleges found
+            </div>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
 function Comparison() {
   const { colleges } = useCatalog();
-  const { compareIds, clearCompare } = useCompare();
+  const { compareIds, clearCompare, toggleCompare } = useCompare();
   const selected = colleges.filter((college) => compareIds.includes(college.id));
-  if (selected.length < 2) return <Page title="College Comparison" subtitle="Compare up to four saved schools side-by-side."><Empty icon={BarChart3} title="Choose at least two colleges" action="Browse colleges" to="/colleges" /></Page>;
+
+  if (selected.length < 2) {
+    return (
+      <Page title="College Comparison" subtitle="Compare up to four saved schools side-by-side.">
+        <div className="mx-auto max-w-2xl space-y-6 py-6">
+          <Card className="p-6 text-center border-dashed border-2 border-slate-200 bg-slate-50/20 flex flex-col items-center gap-4 relative z-10">
+            <span className="grid size-14 place-items-center rounded-lg bg-blue-50 text-blue-600">
+              <BarChart3 size={28} />
+            </span>
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">Select colleges to compare</h3>
+              <p className="text-sm text-slate-500 mt-1">
+                Select 2 or more colleges to see a detailed side-by-side comparison.
+              </p>
+            </div>
+            
+            <CollegeCompareSelector />
+            
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-slate-400 font-semibold">Or</span>
+              <Link to="/colleges" className="text-xs text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1">
+                Browse all colleges in explorer <ArrowRight size={14} />
+              </Link>
+            </div>
+          </Card>
+
+          {selected.length === 1 && (
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Currently Selected</h4>
+              <Card className="p-3 flex items-center justify-between border border-slate-200/60 bg-white">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 font-extrabold text-white text-xs">
+                    {initials(selected[0].name)}
+                  </span>
+                  <div>
+                    <h5 className="font-extrabold text-slate-800 text-sm">{selected[0].name}</h5>
+                    <p className="text-xs text-slate-400 font-semibold">{selected[0].city}, {selected[0].state}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  className="size-8 p-0 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500"
+                  onClick={() => toggleCompare(selected[0].id)}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </Card>
+            </div>
+          )}
+        </div>
+      </Page>
+    );
+  }
+
   const rows = [
     ["Tuition", (c: College) => formatMoney(c.tuition)],
     ["Acceptance Rate", (c: College) => `${c.acceptanceRate}%`],
@@ -1221,13 +1444,49 @@ function Comparison() {
     ["Type", (c: College) => c.type],
     ["Majors", (c: College) => c.majors.join(", ")],
   ];
+
   return (
     <Page title="College Comparison" subtitle={`${selected.length} of 4 colleges selected.`}>
-      <Button variant="outline" className="w-fit" onClick={clearCompare}><X size={17} />Clear comparison</Button>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm mb-4 relative z-20">
+        <Button variant="outline" className="w-fit border-slate-200 hover:bg-slate-50 text-slate-700" onClick={clearCompare}>
+          <X size={17} />Clear comparison
+        </Button>
+        <CollegeCompareSelector />
+      </div>
       <Card className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
-          <thead><tr className="border-b bg-slate-50"><th className="p-4">Metric</th>{selected.map((c) => <th className="p-4" key={c.id}>{c.name}</th>)}</tr></thead>
-          <tbody>{rows.map(([label, get]) => <tr className="border-b last:border-0" key={label as string}><td className="p-4 font-semibold">{label as string}</td>{selected.map((college) => <td className="max-w-72 p-4 align-top text-slate-600" key={college.id}>{(get as (c: College) => string)(college)}</td>)}</tr>)}</tbody>
+          <thead>
+            <tr className="border-b bg-slate-50">
+              <th className="p-4 w-40">Metric</th>
+              {selected.map((c) => (
+                <th className="p-4 relative group" key={c.id}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate max-w-[180px]" title={c.name}>{c.name}</span>
+                    <button
+                      type="button"
+                      className="size-5 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors animate-fade-in"
+                      onClick={() => toggleCompare(c.id)}
+                      title="Remove from comparison"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([label, get]) => (
+              <tr className="border-b last:border-0" key={label as string}>
+                <td className="p-4 font-semibold">{label as string}</td>
+                {selected.map((college) => (
+                  <td className="max-w-72 p-4 align-top text-slate-600" key={college.id}>
+                    {(get as (c: College) => string)(college)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
         </table>
       </Card>
     </Page>
@@ -1486,6 +1745,7 @@ function CareerCard({ career }: { career: Career }) {
 
 function CollegeCard({ college }: { college: College }) {
   const { profile, saveProfile } = useAuth();
+  const { compareIds, toggleCompare } = useCompare();
   const saved = profile?.savedColleges?.includes(college.id);
   const fitScore = calculateFitScore(profile, college);
   const navigate = useNavigate();
@@ -1517,14 +1777,27 @@ function CollegeCard({ college }: { college: College }) {
             </div>
           </div>
           
-          <Button
-            variant="ghost"
-            className="size-9 p-0 rounded-full hover:bg-rose-50"
-            title={saved ? "Saved" : "Save College"}
-            onClick={() => toggleSaved(profile, saveProfile, college.id)}
-          >
-            <Heart size={18} className={cn("transition-all duration-200", saved ? "fill-rose-500 text-rose-500 scale-110" : "text-slate-400")} />
-          </Button>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <Button
+              variant="ghost"
+              className={cn(
+                "size-9 p-0 rounded-full",
+                compareIds.includes(college.id) ? "bg-blue-50 text-blue-600 hover:bg-blue-100" : "hover:bg-slate-100 text-slate-400"
+              )}
+              title={compareIds.includes(college.id) ? "Remove from Compare" : "Compare"}
+              onClick={() => toggleCompare(college.id)}
+            >
+              <BarChart3 size={18} className={cn("transition-all duration-200", compareIds.includes(college.id) ? "scale-110" : "")} />
+            </Button>
+            <Button
+              variant="ghost"
+              className="size-9 p-0 rounded-full hover:bg-rose-50"
+              title={saved ? "Saved" : "Save College"}
+              onClick={() => toggleSaved(profile, saveProfile, college.id)}
+            >
+              <Heart size={18} className={cn("transition-all duration-200", saved ? "fill-rose-500 text-rose-500 scale-110" : "text-slate-400")} />
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
