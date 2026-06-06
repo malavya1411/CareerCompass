@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { AppStatus, College, GrowthOutlook, StudentProfile } from "./types";
+import type { AppStatus, College, GrowthOutlook, StudentProfile } from "../types/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -31,8 +31,8 @@ export function profileIncomplete(profile: StudentProfile | null) {
 
 export function majorOverlap(profile: StudentProfile | null, college: College) {
   if (!profile) return 0;
-  const tokens = [profile.intendedMajor, ...profile.interests, ...profile.careerInterests].map((x) => x.toLowerCase());
-  return college.majors.filter((major) => tokens.some((token) => major.toLowerCase().includes(token) || token.includes(major.toLowerCase()))).length;
+  const tokens = [profile.intendedMajor, ...profile.interests, ...profile.activities].map((x) => x.toLowerCase());
+  return college.majors.filter((major: string) => tokens.some((token: string) => major.toLowerCase().includes(token) || token.includes(major.toLowerCase()))).length;
 }
 
 export function calculateFitScore(profile: StudentProfile | null, college: College): number {
@@ -41,7 +41,7 @@ export function calculateFitScore(profile: StudentProfile | null, college: Colle
 
   if (profile.intendedMajor) {
     const intended = profile.intendedMajor.toLowerCase();
-    const matchesMajor = college.majors.some((m) => 
+    const matchesMajor = college.majors.some((m: string) => 
       m.toLowerCase().includes(intended) || intended.includes(m.toLowerCase())
     );
     if (matchesMajor) {
@@ -66,9 +66,9 @@ export function calculateFitScore(profile: StudentProfile | null, college: Colle
   }
 
   if (profile.careerInterests && profile.careerInterests.length > 0) {
-    const overlaps = college.majors.some((major) => {
+    const overlaps = college.majors.some((major: string) => {
       const lowerMajor = major.toLowerCase();
-      return profile.careerInterests.some((cat) => {
+      return profile.careerInterests.some((cat: string) => {
         const lowerCat = cat.toLowerCase();
         if (lowerCat === "stem" && (lowerMajor.includes("computer") || lowerMajor.includes("engineer") || lowerMajor.includes("science") || lowerMajor.includes("math") || lowerMajor.includes("physics") || lowerMajor.includes("robotics"))) return true;
         if (lowerCat === "business" && (lowerMajor.includes("business") || lowerMajor.includes("finance") || lowerMajor.includes("marketing") || lowerMajor.includes("accounting") || lowerMajor.includes("economics"))) return true;
@@ -86,3 +86,18 @@ export function calculateFitScore(profile: StudentProfile | null, college: Colle
 
   return Math.min(99, Math.max(30, score));
 }
+
+export function toggle<T>(items: T[], item: T) {
+  return items.includes(item) ? items.filter((x) => x !== item) : [...items, item];
+}
+
+export function toggleSaved(
+  profile: StudentProfile | null,
+  saveProfile: (patch: Partial<StudentProfile>) => Promise<void>,
+  collegeId: string
+) {
+  const saved = profile?.savedColleges || [];
+  saveProfile({ savedColleges: toggle(saved, collegeId) });
+}
+
+

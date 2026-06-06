@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import { db, firebaseReady } from "./firebase";
-import type { Career, College } from "./types";
+import type { Career, College } from "../shared/types/types";
 
 export const careerSeeds: Career[] = [
   { id: "software-engineer", title: "Software Engineer", category: "STEM", salaryRange: "₹8L - ₹25L", growthOutlook: "High", educationLevel: "Bachelor's in Computer Science or related field", skills: ["Programming", "Systems thinking", "Debugging", "Collaboration"], relatedMajors: ["Computer Science", "Software Engineering", "Data Science"], description: "Designs, builds, and improves software products used by people and organizations." },

@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
 import { doc, getDoc, setDoc, addDoc, collection, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
-import { auth, db, firebaseReady } from "../lib/firebase";
-import type { StudentProfile, Application, AppStatus } from "../lib/types";
+import { auth, db, firebaseReady } from "../../../services/firebase";
+import type { StudentProfile, Application, AppStatus } from "../../../shared/types/types";
 
 type AuthContextValue = {
   user: User | null;
