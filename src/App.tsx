@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { Link, NavLink, Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
-import { BarChart3, BookOpen, BriefcaseBusiness, CalendarClock, Check, Compass, GraduationCap, Heart, LayoutDashboard, ListChecks, LogOut, MapPin, Plus, Search, SlidersHorizontal, User, X } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, BriefcaseBusiness, Building2, Calendar, CalendarClock, Check, ChevronRight, Clock, Compass, GraduationCap, Heart, LayoutDashboard, ListChecks, LogOut, MapPin, MessageSquare, Plus, Search, SlidersHorizontal, Trash2, User, X } from "lucide-react";
 import { db, firebaseReady } from "./lib/firebase";
 import { careerSeeds, collegeSeeds, seedDataIfNeeded } from "./lib/seedData";
 import type { Application, AppStatus, Career, College, StudentProfile } from "./lib/types";
 import { categories, cn, daysUntil, formatMoney, growthScore, initials, majorOverlap, profileIncomplete, statuses, calculateFitScore } from "./lib/utils";
 import { useAuth } from "./state/AuthContext";
 import { useCompare } from "./state/CompareContext";
-import { Badge, Button, Card, Field, Input, Progress, Select, Separator } from "./components/ui";
+import { Badge, Button, Card, Field, Input, Progress, Select, Separator, Textarea } from "./components/ui";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -65,6 +65,8 @@ function useApplications(userId?: string) {
           status: data.status,
           deadline: data.deadline?.toDate ? data.deadline.toDate() : new Date(data.deadline),
           notes: data.notes || "",
+          completeness: data.completeness || 0,
+          decisionOutcome: data.decisionOutcome || undefined,
           createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
         } as Application;
       }));
@@ -149,7 +151,16 @@ function MobileNavItem({ to, label, icon: Icon }: { to: string; label: string; i
 function App() {
   const auth = useAuth();
   if (auth.loading) return <LoadingScreen />;
-  if (!auth.user) return <AuthPage />;
+  
+  if (!auth.user) {
+    return (
+      <Routes>
+        <Route path="/signin" element={<SignInPage />} />
+        <Route path="*" element={<LandingPage />} />
+      </Routes>
+    );
+  }
+
   return (
     <Shell>
       <Routes>
@@ -161,7 +172,8 @@ function App() {
         <Route path="/compare" element={<Comparison />} />
         <Route path="/tracker" element={<Tracker />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/signin" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Shell>
   );
@@ -171,7 +183,399 @@ function LoadingScreen() {
   return <div className="grid min-h-screen place-items-center bg-slate-50"><div className="grid gap-4 text-center"><div className="mx-auto grid size-14 place-items-center rounded-lg bg-blue-700 text-white"><Compass /></div><p className="font-semibold text-slate-600">Loading CareerCompass</p></div></div>;
 }
 
-function AuthPage() {
+function LandingPage() {
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const navigate = useNavigate();
+
+  const faqs = [
+    {
+      q: "Is CareerCompass free to use?",
+      a: "Yes, CareerCompass is completely free. You can use our Demo Mode to explore all features locally in browser memory without signing up, or create a free account to sync and persist your data."
+    },
+    {
+      q: "Do I need a Firebase database setup to run the website?",
+      a: "No database setup is required to explore! CareerCompass runs with a simulated memory state by default (Demo Mode). Setting up Firebase is optional and only needed if you want persistent cloud storage across devices."
+    },
+    {
+      q: "How does the Kanban board tracker work?",
+      a: "The Kanban board visualizes your applications across 5 stages: Researching, Shortlisted, Applying, Submitted, and Decision. You can easily click 'Move Stage' to advance colleges, track checklist progress, and see color-coded alerts for approaching deadlines."
+    },
+    {
+      q: "Can I track custom colleges not in the catalog?",
+      a: "Absolutely! The tracker includes an 'Add College' form where you can choose colleges from our catalog or type a custom college name and select its type (Public or Private) to begin tracking instantly."
+    }
+  ];
+
+  return (
+    <div className="min-h-screen mesh-bg flex flex-col font-sans antialiased text-slate-800">
+      {/* Landing Navbar */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/70 backdrop-blur-md border-b border-slate-100/80 px-4 py-3">
+        <div className="mx-auto max-w-6xl flex items-center justify-between">
+          <div className="flex items-center gap-2.5 text-lg font-extrabold text-slate-900 select-none">
+            <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/10">
+              <Compass size={18} />
+            </span>
+            <span>CareerCompass</span>
+          </div>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-bold text-slate-500">
+            <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
+            <a href="#showcase" className="hover:text-slate-900 transition-colors">Live Preview</a>
+            <a href="#faqs" className="hover:text-slate-900 transition-colors">FAQs</a>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => navigate("/signin")} 
+              variant="outline"
+              className="h-8.5 text-xs font-bold border-slate-200 hover:border-slate-300 text-slate-700 bg-white"
+            >
+              Sign In
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="flex-grow pt-24 pb-16 px-4">
+        <div className="mx-auto max-w-6xl space-y-24">
+          
+          {/* Hero Section */}
+          <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] items-center">
+            
+            {/* Left Column: Hero Text */}
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-1.5 bg-blue-50/70 border border-blue-100 rounded-full px-3.5 py-1 text-xs font-extrabold text-blue-700 tracking-wide">
+                <span>🚀</span> Redefining College Prep
+              </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-950 leading-[1.1]">
+                Plan careers, discover colleges, & navigate <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent">applications.</span>
+              </h1>
+              <p className="max-w-xl text-base sm:text-lg text-slate-500 leading-relaxed font-medium">
+                Ditch the messy spreadsheets. Organize your college journey on an interactive Kanban board with automated checklist metrics, career path exploration, and timeline roadmaps.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-1">
+                <Button 
+                  onClick={() => navigate("/signin")}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 flex items-center gap-1.5"
+                >
+                  Get Started <ArrowRight size={16} />
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Column: Premium Mock Workspace Graphic */}
+            <div className="w-full max-w-md mx-auto aspect-[4/3] rounded-2xl bg-white/40 backdrop-blur-xl border border-white/40 shadow-2xl p-6 overflow-hidden flex flex-col justify-between relative">
+              {/* Abstract light circles in bg */}
+              <div className="absolute -right-8 -top-8 size-40 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -left-10 -bottom-10 size-40 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
+
+              {/* Header of mock card */}
+              <div className="relative flex justify-between items-center pb-4 border-b border-slate-200/50">
+                <div className="flex items-center gap-2">
+                  <div className="size-3 rounded-full bg-rose-400" />
+                  <div className="size-3 rounded-full bg-amber-400" />
+                  <div className="size-3 rounded-full bg-emerald-400" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded">Workspace Preview</span>
+              </div>
+
+              {/* Content of mock card */}
+              <div className="relative flex-grow flex flex-col justify-center gap-4 py-4">
+                {/* Floating Widget 1 - Progress widget */}
+                <div className="animate-float-1 bg-white/80 backdrop-blur-md p-4 rounded-xl border border-slate-100 shadow-md flex items-center gap-4">
+                  <div className="size-12 rounded-full border-4 border-indigo-500 border-t-indigo-100 flex items-center justify-center font-extrabold text-xs text-indigo-600">
+                    75%
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs text-slate-800">Application Completeness</h4>
+                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">IIT Bombay • 3 of 4 tasks done</p>
+                  </div>
+                </div>
+
+                {/* Floating Widget 2 - Fit score card */}
+                <div className="animate-float-2 bg-white/80 backdrop-blur-md p-4 rounded-xl border border-slate-100 shadow-md flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="grid size-9 place-items-center rounded-lg bg-emerald-50 text-emerald-600">
+                      <GraduationCap size={18} />
+                    </span>
+                    <div>
+                      <h4 className="font-extrabold text-xs text-slate-800">BITS Pilani</h4>
+                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">Computer Science</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="inline-block bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-100">
+                      94% Fit
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer of mock card */}
+              <div className="relative pt-3 border-t border-slate-200/50 flex items-center justify-between text-[10px] font-bold text-slate-400">
+                <span>CareerCompass Workspace v1.0</span>
+                <span className="text-blue-500">Live system status</span>
+              </div>
+            </div>
+
+          </section>
+
+          {/* Stats Bar */}
+          <section className="grid grid-cols-3 gap-4 bg-white/60 border border-slate-100 rounded-3xl p-6 shadow-sm text-center">
+            <div>
+              <p className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">150+</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Careers Mapped</p>
+            </div>
+            <div className="border-x border-slate-100">
+              <p className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">4,000+</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Colleges Indexed</p>
+            </div>
+            <div>
+              <p className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">10k+</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">Deadlines Scheduled</p>
+            </div>
+          </section>
+
+          {/* Visual Showcase: Interactive Mock Kanban Board */}
+          <section id="showcase" className="space-y-6 text-center">
+            <div className="space-y-2 max-w-2xl mx-auto">
+              <span className="text-xs font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-full">Interactive Workspace</span>
+              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Visualize your application roadmaps</h2>
+              <p className="text-slate-500 font-medium text-sm">See exactly how your target colleges progress from early interest to final decisions.</p>
+            </div>
+            
+            {/* Mock Kanban Layout */}
+            <Card className="p-4 bg-slate-50/50 border border-slate-100/70 rounded-3xl shadow-sm text-left overflow-x-auto">
+              <div className="min-w-[800px] grid grid-cols-3 gap-4 select-none pointer-events-none">
+                
+                {/* Column 1: Shortlisted */}
+                <div className="bg-amber-50/30 border border-amber-100/50 p-3.5 rounded-2xl space-y-3">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="size-2 rounded-full bg-amber-500" />
+                      <span className="font-extrabold text-xs text-slate-700">Shortlisted</span>
+                    </div>
+                    <span className="text-[10px] font-bold bg-white px-1.5 py-0.5 rounded border">1</span>
+                  </div>
+                  {/* Card 1 */}
+                  <Card className="p-3 border border-slate-200/80 shadow-sm space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-extrabold text-slate-800 text-xs truncate">BITS Pilani</h4>
+                      <Badge tone="blue" className="text-[8px] py-0 px-1 font-bold">Private</Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                      <Clock size={11} />
+                      <span>Dec 15 (45 days remaining)</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[8px] font-bold text-slate-400">
+                        <span>Completeness</span>
+                        <span>40%</span>
+                      </div>
+                      <Progress value={40} />
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Column 2: Applying */}
+                <div className="bg-orange-50/30 border border-orange-100/50 p-3.5 rounded-2xl space-y-3">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="size-2 rounded-full bg-orange-500" />
+                      <span className="font-extrabold text-xs text-slate-700">Applying</span>
+                    </div>
+                    <span className="text-[10px] font-bold bg-white px-1.5 py-0.5 rounded border">1</span>
+                  </div>
+                  {/* Card 2 */}
+                  <Card className="p-3 border-orange-200 bg-white shadow-sm space-y-2 relative border-l-4 border-l-orange-500">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-extrabold text-slate-800 text-xs truncate">IIT Bombay</h4>
+                      <Badge tone="blue" className="text-[8px] py-0 px-1 font-bold">Public</Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-rose-500 urgent-pulse">
+                      <Clock size={11} />
+                      <span>Nov 10 (10 days remaining)</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[8px] font-bold text-slate-400">
+                        <span>Completeness</span>
+                        <span>65%</span>
+                      </div>
+                      <Progress value={65} />
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Column 3: Decision */}
+                <div className="bg-emerald-50/20 border border-emerald-100/40 p-3.5 rounded-2xl space-y-3">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="size-2 rounded-full bg-emerald-500" />
+                      <span className="font-extrabold text-xs text-slate-700">Decision</span>
+                    </div>
+                    <span className="text-[10px] font-bold bg-white px-1.5 py-0.5 rounded border">1</span>
+                  </div>
+                  {/* Card 3 */}
+                  <Card className="p-3 border-emerald-300 bg-emerald-50/10 shadow-sm space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-extrabold text-slate-800 text-xs truncate">NIT Trichy</h4>
+                      <Badge tone="emerald" className="text-[8px] py-0 px-1 font-extrabold uppercase tracking-wider">Accepted 🎉</Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                      <Clock size={11} />
+                      <span>Oct 15 (Decided)</span>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[8px] font-bold text-slate-400">
+                        <span>Completeness</span>
+                        <span>100%</span>
+                      </div>
+                      <Progress value={100} />
+                    </div>
+                  </Card>
+                </div>
+
+              </div>
+            </Card>
+          </section>
+
+          {/* Features Grid Section */}
+          <section id="features" className="space-y-10">
+            <div className="space-y-2 text-center max-w-2xl mx-auto">
+              <span className="text-xs font-extrabold text-purple-600 uppercase tracking-wider bg-purple-50 px-2.5 py-1 rounded-full">Core Features</span>
+              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Discover your customized checklist</h2>
+              <p className="text-slate-500 font-medium text-sm">Everything you need to successfully design your pathway from high school onward.</p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {/* Feature 1 */}
+              <Card className="p-5 flex flex-col justify-between items-start border-slate-100 glow-card-blue transition-all duration-300 group">
+                <div className="space-y-3">
+                  <span className="grid size-10 place-items-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <ListChecks size={20} />
+                  </span>
+                  <h3 className="font-extrabold text-slate-800 text-base leading-tight">Visual Kanban tracker</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                    Organize your applications from researching status to final decisions, updating checkmarks effortlessly.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-extrabold text-blue-600">
+                  Track stages <ChevronRight size={14} />
+                </div>
+              </Card>
+
+              {/* Feature 2 */}
+              <Card className="p-5 flex flex-col justify-between items-start border-slate-100 glow-card-purple transition-all duration-300 group">
+                <div className="space-y-3">
+                  <span className="grid size-10 place-items-center rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                    <BriefcaseBusiness size={20} />
+                  </span>
+                  <h3 className="font-extrabold text-slate-800 text-base leading-tight">Career mapping</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                    Explore high-growth careers across categories, outlining necessary skills and related collegiate majors.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-extrabold text-purple-600">
+                  Explore paths <ChevronRight size={14} />
+                </div>
+              </Card>
+
+              {/* Feature 3 */}
+              <Card className="p-5 flex flex-col justify-between items-start border-slate-100 glow-card-emerald transition-all duration-300 group">
+                <div className="space-y-3">
+                  <span className="grid size-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                    <GraduationCap size={20} />
+                  </span>
+                  <h3 className="font-extrabold text-slate-800 text-base leading-tight">Colleges explorer</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                    Search public/private colleges, evaluate tuition costs, acceptance rates, and majors to build your list.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-extrabold text-emerald-600">
+                  Find colleges <ChevronRight size={14} />
+                </div>
+              </Card>
+
+              {/* Feature 4 */}
+              <Card className="p-5 flex flex-col justify-between items-start border-slate-100 glow-card-amber transition-all duration-300 group">
+                <div className="space-y-3">
+                  <span className="grid size-10 place-items-center rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
+                    <BarChart3 size={20} />
+                  </span>
+                  <h3 className="font-extrabold text-slate-800 text-base leading-tight">Colleges comparison</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                    Compare up to four saved schools side-by-side on metrics to evaluate cost, size, and fit.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center gap-1 text-xs font-extrabold text-amber-600">
+                  Compare schools <ChevronRight size={14} />
+                </div>
+              </Card>
+            </div>
+          </section>
+
+          {/* Interactive Accordion FAQs */}
+          <section id="faqs" className="space-y-8 max-w-3xl mx-auto">
+            <div className="space-y-2 text-center">
+              <span className="text-xs font-extrabold text-blue-600 uppercase tracking-wider bg-blue-50 px-2.5 py-1 rounded-full">Frequently Asked Questions</span>
+              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Got questions? We've got answers.</h2>
+            </div>
+            
+            <div className="grid gap-3">
+              {faqs.map((faq, index) => {
+                const isOpen = activeFaq === index;
+                return (
+                  <Card 
+                    key={index}
+                    className="overflow-hidden border border-slate-100 hover:border-slate-200 transition-colors"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setActiveFaq(isOpen ? null : index)}
+                      className="w-full flex items-center justify-between p-5 text-left font-bold text-slate-800 text-sm select-none"
+                    >
+                      <span>{faq.q}</span>
+                      <span className={cn("text-slate-400 transition-transform duration-300", isOpen && "rotate-45")}>
+                        <Plus size={16} />
+                      </span>
+                    </button>
+                    <div 
+                      className={cn(
+                        "faq-transition overflow-hidden text-xs text-slate-500 font-medium leading-relaxed bg-slate-50/50",
+                        isOpen ? "max-h-36 p-5 pt-0 border-t border-slate-100/60 opacity-100" : "max-h-0 opacity-0"
+                      )}
+                    >
+                      {faq.a}
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+
+        </div>
+      </main>
+
+      {/* Landing Footer */}
+      <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4 text-slate-400 text-xs">
+        <div className="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5 text-white font-extrabold text-sm select-none">
+            <span className="grid size-8 place-items-center rounded-lg bg-blue-600 text-white">
+              <Compass size={16} />
+            </span>
+            <span>CareerCompass</span>
+          </div>
+          <p className="font-medium">© {new Date().getFullYear()} CareerCompass. Plan your future with confidence.</p>
+          <div className="flex items-center gap-5 font-bold text-slate-500 hover:text-slate-400">
+            <button onClick={() => navigate("/signin")} className="hover:text-white transition-colors">Sign In</button>
+            <button onClick={() => navigate("/signin")} className="hover:text-white transition-colors">Sandbox Demo</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function SignInPage() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -193,71 +597,267 @@ function AuthPage() {
         navigate("/profile");
       } else {
         await login(email, password);
+        navigate("/");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
     }
   }
 
+  const handleDemoMode = () => {
+    startDemo();
+    navigate("/");
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto grid max-w-5xl items-center gap-8 md:grid-cols-[1.1fr_0.9fr]">
-        <section className="space-y-6">
-          <div className="flex items-center gap-3 text-2xl font-bold"><span className="grid size-12 place-items-center rounded-lg bg-blue-700 text-white"><Compass /></span>CareerCompass</div>
-          <h1 className="max-w-2xl text-4xl font-bold tracking-normal text-slate-950 md:text-6xl">Plan careers, colleges, and applications in one focused workspace.</h1>
-          <p className="max-w-xl text-lg text-slate-600">Explore realistic paths, save colleges, compare options, and keep deadlines visible from the first demo click.</p>
-          <div className="grid max-w-xl grid-cols-3 gap-3">
-            {["Careers", "Colleges", "Tracker"].map((item) => <Card key={item} className="p-4"><p className="text-2xl font-bold text-blue-700">✓</p><p className="font-semibold">{item}</p></Card>)}
-          </div>
-        </section>
-        <Card className="p-6">
-          <div className="mb-6 grid grid-cols-2 rounded-md bg-slate-100 p-1">
-            <button className={cn("rounded-md py-2 text-sm font-semibold", mode === "login" && "bg-white shadow-sm")} onClick={() => setMode("login")}>Login</button>
-            <button className={cn("rounded-md py-2 text-sm font-semibold", mode === "register" && "bg-white shadow-sm")} onClick={() => setMode("register")}>Register</button>
-          </div>
-          <form className="grid gap-4" onSubmit={submit}>
-            {mode === "register" && <Field label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} required /></Field>}
-            <Field label="Email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-            <Field label="Password"><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></Field>
-            {(error || authError) && <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">{error || authError}</p>}
-            {!firebaseReady && (
-              <div className="rounded-md bg-blue-50/80 p-3.5 border border-blue-100 text-sm text-blue-900">
-                <p className="font-semibold mb-1">Firebase is currently running with mock values.</p>
-                <p className="text-xs text-blue-700/90 leading-relaxed mb-2.5">
-                  Add real keys in <code>src/lib/firebase.ts</code> or a Vite <code>.env</code> file to enable email auth and persistent cloud databases.
+    <div className="min-h-screen mesh-bg flex flex-col font-sans antialiased text-slate-800">
+      {/* Navbar */}
+      <header className="bg-white/70 backdrop-blur-md border-b border-slate-100/80 px-4 py-3">
+        <div className="mx-auto max-w-6xl flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5 text-lg font-extrabold text-slate-900 select-none">
+            <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/10">
+              <Compass size={18} />
+            </span>
+            <span>CareerCompass</span>
+          </Link>
+          <Link 
+            to="/" 
+            className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1.5"
+          >
+            ← Back to Home
+          </Link>
+        </div>
+      </header>
+
+      {/* Main content centered */}
+      <div className="flex-grow flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
+          <Card className="glass-card p-6 sm:p-8 shadow-xl border border-white/60 relative overflow-hidden rounded-2xl">
+            {/* Decorative gradients */}
+            <div className="absolute -right-12 -top-12 size-36 bg-blue-400/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -left-12 -bottom-12 size-36 bg-indigo-400/10 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                {mode === "register" ? "Create your workspace" : "Welcome back"}
+              </h2>
+              <p className="text-slate-500 font-medium text-xs mt-1">
+                {mode === "register" ? "Join CareerCompass for free today." : "Access your colleges and career pathways."}
+              </p>
+            </div>
+
+            <div className="relative mb-5 flex bg-slate-100 p-1 rounded-xl">
+              <button 
+                type="button"
+                className={cn(
+                  "flex-grow rounded-lg py-2 text-xs font-bold transition-all", 
+                  mode === "login" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                )} 
+                onClick={() => { setMode("login"); setError(""); }}
+              >
+                Log In
+              </button>
+              <button 
+                type="button"
+                className={cn(
+                  "flex-grow rounded-lg py-2 text-xs font-bold transition-all", 
+                  mode === "register" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                )} 
+                onClick={() => { setMode("register"); setError(""); }}
+              >
+                Register
+              </button>
+            </div>
+            
+            <form className="relative grid gap-4" onSubmit={submit}>
+              {mode === "register" && (
+                <Field label="Full Name">
+                  <Input 
+                    placeholder="Alex Morgan"
+                    value={name} 
+                    onChange={(e) => setName(e.target.value)} 
+                    required 
+                    className="bg-white/80 border-slate-200/80 focus:bg-white"
+                  />
+                </Field>
+              )}
+              <Field label="Email Address">
+                <Input 
+                  type="email" 
+                  placeholder="alex@example.com"
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  className="bg-white/80 border-slate-200/80 focus:bg-white"
+                />
+              </Field>
+              <Field label="Password">
+                <Input 
+                  type="password" 
+                  placeholder="••••••••"
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                  className="bg-white/80 border-slate-200/80 focus:bg-white"
+                />
+              </Field>
+              
+              {(error || authError) && (
+                <p className="rounded-xl bg-amber-50 border border-amber-100 p-3 text-xs text-amber-800 font-bold leading-normal">
+                  ⚠️ {error || authError}
                 </p>
-                <Button 
-                  type="button" 
-                  variant="primary" 
-                  className="w-full h-9 bg-blue-700 hover:bg-blue-800 text-xs font-bold text-white shadow-sm transition-all"
-                  onClick={startDemo}
+              )}
+
+              {!firebaseReady && (
+                <div className="rounded-xl bg-blue-50/50 border border-blue-100 p-3 text-xs text-blue-900 leading-normal space-y-2">
+                  <p className="font-extrabold">✨ Sandbox Mode Enabled</p>
+                  <p className="text-slate-500 font-medium text-[11px] leading-relaxed">
+                    Firebase is currently bypassed. Explore fully featured tracker state saved securely in browser storage.
+                  </p>
+                  <Button 
+                    type="button" 
+                    variant="primary" 
+                    className="w-full h-8.5 bg-blue-600 hover:bg-blue-700 text-xs font-bold text-white shadow-sm"
+                    onClick={handleDemoMode}
+                  >
+                    Explore Sandbox Demo
+                  </Button>
+                </div>
+              )}
+              
+              {firebaseReady && (
+                <Button type="submit" className="w-full h-10 mt-2 font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-500/10">
+                  {mode === "register" ? "Create Account" : "Access Workspace"}
+                </Button>
+              )}
+            </form>
+
+            {firebaseReady && (
+              <div className="relative mt-4">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div className="h-px flex-grow bg-slate-200/60" />
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Or</span>
+                  <div className="h-px flex-grow bg-slate-200/60" />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-9 border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-900 font-bold rounded-xl text-xs"
+                  onClick={handleDemoMode}
                 >
-                  Quick Start: Explore Demo Mode
+                  Continue in Demo Mode
                 </Button>
               </div>
             )}
-            {firebaseReady && <Button type="submit">{mode === "register" ? "Create account" : "Sign in"}</Button>}
-          </form>
-          {firebaseReady && (
-            <>
-              <div className="my-4 flex items-center justify-center gap-3">
-                <div className="h-px flex-1 bg-slate-200" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Or</span>
-                <div className="h-px flex-1 bg-slate-200" />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full border-blue-200 bg-blue-50/50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300"
-                onClick={startDemo}
-              >
-                Explore Demo Mode (No Login)
-              </Button>
-            </>
-          )}
-        </Card>
+          </Card>
+        </div>
       </div>
     </div>
+  );
+}
+
+function DashboardCareerCard({ career }: { career: Career }) {
+  return (
+    <Link to={`/careers/${career.id}`}>
+      <Card className={cn(
+        "p-4 hover:shadow-md transition-all duration-300 border border-slate-100 hover:border-slate-200 bg-white flex items-center justify-between gap-4 group rounded-xl border-l-4",
+        career.category === "STEM" && "border-l-blue-500",
+        career.category === "Business" && "border-l-violet-500",
+        career.category === "Healthcare" && "border-l-emerald-500",
+        career.category === "Arts" && "border-l-pink-500",
+        career.category === "Education" && "border-l-amber-500",
+        career.category === "Law" && "border-l-slate-400"
+      )}>
+        <div className="flex items-center gap-3.5 min-w-0">
+          <span className={cn("grid size-10 place-items-center rounded-xl transition-colors flex-shrink-0",
+            career.category === "STEM" && "bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white",
+            career.category === "Business" && "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white",
+            career.category === "Healthcare" && "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white",
+            career.category === "Arts" && "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white",
+            career.category === "Education" && "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white",
+            career.category === "Law" && "bg-slate-50 text-slate-600 group-hover:bg-slate-600 group-hover:text-white"
+          )}>
+            <BriefcaseBusiness size={20} />
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors truncate">{career.title}</h3>
+            <span className="text-[10px] text-slate-400 font-bold tracking-wide uppercase mt-0.5 block">{career.category}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="text-right hidden sm:block">
+            <p className="text-[10px] text-slate-400 font-bold uppercase">Salary</p>
+            <p className="text-xs font-extrabold text-slate-700 mt-0.5">{career.salaryRange}</p>
+          </div>
+          <GrowthBadge value={career.growthOutlook} />
+          <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
+        </div>
+      </Card>
+    </Link>
+  );
+}
+
+function DashboardCollegeCard({ college }: { college: College }) {
+  const { profile, saveProfile } = useAuth();
+  const saved = profile?.savedColleges?.includes(college.id);
+  const fitScore = calculateFitScore(profile, college);
+  const navigate = useNavigate();
+
+  let fitBadgeClass = "";
+  if (fitScore >= 80) {
+    fitBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+  } else if (fitScore >= 60) {
+    fitBadgeClass = "bg-amber-50 text-amber-700 border-amber-200/60";
+  } else {
+    fitBadgeClass = "bg-rose-50 text-rose-700 border-rose-200/60";
+  }
+
+  return (
+    <Card className="p-4 hover:shadow-md transition-all duration-300 border border-slate-100 hover:border-slate-200 bg-white flex items-center justify-between gap-4 group rounded-xl">
+      <div className="flex items-center gap-3.5 min-w-0 flex-1">
+        <span className="grid size-10 place-items-center rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 font-extrabold text-white text-xs shadow-sm flex-shrink-0">
+          {initials(college.name)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="font-bold text-slate-800 text-sm group-hover:text-blue-600 transition-colors truncate">
+            <Link to={`/colleges/${college.id}`}>{college.name}</Link>
+          </h3>
+          <p className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5">
+            <MapPin size={11} /> {college.city}, {college.state}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="hidden md:flex flex-wrap gap-1 max-w-[200px] justify-end">
+          {college.majors.slice(0, 2).map((major) => (
+            <Badge key={major} tone="slate" className="text-[9px] py-0 px-1.5 border-slate-200 bg-slate-50 text-slate-500 font-medium">
+              {major}
+            </Badge>
+          ))}
+        </div>
+        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 flex-shrink-0", fitBadgeClass)}>
+          🎯 {fitScore}% Match
+        </span>
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            className="size-8 p-0 rounded-full hover:bg-rose-50"
+            title={saved ? "Saved" : "Save College"}
+            onClick={() => toggleSaved(profile, saveProfile, college.id)}
+          >
+            <Heart size={16} className={cn("transition-all duration-200", saved ? "fill-rose-500 text-rose-500 scale-110" : "text-slate-400")} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="size-8 p-0 rounded-full hover:bg-slate-100"
+            onClick={() => navigate(`/colleges/${college.id}`)}
+          >
+            <ChevronRight size={16} className="text-slate-400" />
+          </Button>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -270,7 +870,11 @@ function Dashboard() {
     .filter((career) => !profile || profile.careerInterests.includes(career.category) || career.relatedMajors.some((m) => profile.intendedMajor.toLowerCase().includes(m.toLowerCase()) || m.toLowerCase().includes(profile.intendedMajor.toLowerCase())))
     .sort((a, b) => growthScore(b.growthOutlook) - growthScore(a.growthOutlook)).slice(0, 3), [careers, profile]);
   const recommendedColleges = useMemo(() => colleges
-    .filter((college) => college.state.toLowerCase() === profile?.location.toLowerCase() || majorOverlap(profile, college) > 0)
+    .filter((college) => {
+      if (!profile?.location) return false;
+      const userStates = profile.location.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+      return userStates.includes(college.state.toLowerCase()) || majorOverlap(profile, college) > 0;
+    })
     .sort((a, b) => b.acceptanceRate - a.acceptanceRate).slice(0, 3), [colleges, profile]);
   const upcoming = applications.sort((a, b) => a.deadline.getTime() - b.deadline.getTime()).slice(0, 3);
   const dueThisWeek = applications.filter((app) => daysUntil(app.deadline) <= 7 && daysUntil(app.deadline) >= 0).length;
@@ -283,14 +887,12 @@ function Dashboard() {
         <Stat label="Active Applications" value={applications.length} icon={ListChecks} />
         <Stat label="Upcoming This Week" value={dueThisWeek} icon={CalendarClock} />
       </div>
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Section title="Recommended Careers" cta="/careers">
-          <CardGrid items={recommendedCareers.length ? recommendedCareers : careers.slice(0, 3)} render={(career) => <CareerCard career={career} />} />
-        </Section>
-        <Section title="Recommended Colleges" cta="/colleges">
-          <CardGrid items={recommendedColleges.length ? recommendedColleges : colleges.slice(0, 3)} render={(college) => <CollegeCard college={college} />} />
-        </Section>
-      </div>
+      <Section title="Recommended Careers" cta="/careers">
+        <CardGrid items={recommendedCareers.length ? recommendedCareers : careers.slice(0, 3)} render={(career) => <CareerCard career={career} />} />
+      </Section>
+      <Section title="Recommended Colleges" cta="/colleges">
+        <CardGrid items={recommendedColleges.length ? recommendedColleges : colleges.slice(0, 3)} render={(college) => <CollegeCard college={college} />} />
+      </Section>
       <Section title="Upcoming Deadlines" cta="/tracker">
         {upcoming.length ? <div className="grid gap-3">{upcoming.map((app) => <DeadlineRow key={app.id} app={app} college={colleges.find((c) => c.id === app.collegeId)} />)}</div> : <Empty icon={CalendarClock} title="No deadlines yet" action="Add a college to the tracker" to="/colleges" />}
       </Section>
@@ -632,17 +1234,182 @@ function Comparison() {
   );
 }
 
+function getCollegeDetails(collegeId: string, colleges: College[]) {
+  if (collegeId.startsWith("Custom:")) {
+    const separatorIndex = collegeId.indexOf("|");
+    const name = separatorIndex !== -1 ? collegeId.substring(7, separatorIndex) : collegeId.substring(7);
+    const type = separatorIndex !== -1 ? (collegeId.substring(separatorIndex + 1) as "Public" | "Private") : "Public";
+    return { name, type, isCustom: true };
+  }
+  const college = colleges.find((c) => c.id === collegeId);
+  return {
+    name: college?.name || collegeId,
+    type: college?.type || "Public",
+    isCustom: false
+  };
+}
+
 function Tracker() {
-  const { user, isDemo } = useAuth();
+  const { user, isDemo, deleteApplication, updateApplication, addApplication } = useAuth();
   const { colleges } = useCatalog();
   const { applications } = useApplications(user?.uid);
   const [editing, setEditing] = useState<Application | null>(null);
+  const [noting, setNoting] = useState<Application | null>(null);
+  const [addingCollege, setAddingCollege] = useState(false);
+  const [viewMode, setViewMode] = useState<"kanban" | "calendar">("kanban");
+
+  const stats = useMemo(() => {
+    const total = applications.length;
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const deadlinesThisMonth = applications.filter((app) => {
+      const d = new Date(app.deadline);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    }).length;
+    const submittedCount = applications.filter((app) => app.status === "Submitted" || app.status === "Decision").length;
+    return { total, deadlinesThisMonth, submitted: submittedCount };
+  }, [applications]);
+
+  async function handleRemove(app: Application) {
+    if (!window.confirm(`Are you sure you want to remove this college from your tracker?`)) return;
+    try {
+      await deleteApplication(app.id);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete application");
+    }
+  }
+
+  async function handleMoveStage(app: Application) {
+    const currentIndex = statuses.indexOf(app.status);
+    if (currentIndex >= 0 && currentIndex < statuses.length - 1) {
+      const nextStatus = statuses[currentIndex + 1];
+      const nextCompleteness = nextStatus === "Decision" ? 100 : nextStatus === "Submitted" ? 90 : nextStatus === "Applying" ? 50 : nextStatus === "Shortlisted" ? 30 : 0;
+      try {
+        await updateApplication(app.id, { status: nextStatus, completeness: nextCompleteness });
+      } catch (err) {
+        alert(err instanceof Error ? err.message : "Failed to move stage");
+      }
+    }
+  }
+
   return (
     <Page title="Application Tracker" subtitle="Follow each school from research through decisions.">
       {(!firebaseReady && !isDemo) && <Banner text="Firebase config is required for real-time tracker updates." />}
       {isDemo && <div className="mb-4 rounded-lg bg-blue-50/50 border border-blue-100 p-3.5 text-xs text-blue-800 font-medium">✨ Demo Mode Active: Your application tracker is simulated locally in browser memory.</div>}
-      {applications.length ? <div className="grid gap-4 xl:grid-cols-5">{statuses.map((status) => <TrackerColumn key={status} status={status} apps={applications.filter((app) => app.status === status)} colleges={colleges} onEdit={setEditing} />)}</div> : <Empty icon={ListChecks} title="Your tracker is empty" action="Add colleges from discovery" to="/colleges" />}
-      {editing && <EditApplication app={editing} college={colleges.find((c) => c.id === editing.collegeId)} onClose={() => setEditing(null)} />}
+      
+      {/* Stats row */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="p-4 border border-slate-100 bg-white shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider font-semibold">Colleges Tracked</p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900">{stats.total}</p>
+          </div>
+          <span className="grid size-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
+            <Building2 size={22} />
+          </span>
+        </Card>
+        <Card className="p-4 border border-slate-100 bg-white shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider font-semibold">Deadlines This Month</p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900">{stats.deadlinesThisMonth}</p>
+          </div>
+          <span className="grid size-11 place-items-center rounded-xl bg-amber-50 text-amber-600">
+            <Calendar size={22} />
+          </span>
+        </Card>
+        <Card className="p-4 border border-slate-100 bg-white shadow-sm flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider font-semibold">Submitted Applications</p>
+            <p className="mt-1 text-2xl font-extrabold text-slate-900">{stats.submitted}</p>
+          </div>
+          <span className="grid size-11 place-items-center rounded-xl bg-purple-50 text-purple-600">
+            <Check size={22} />
+          </span>
+        </Card>
+      </div>
+
+      {/* Top Bar with view toggles & add button */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm mt-2">
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+          <button
+            onClick={() => setViewMode("kanban")}
+            className={cn(
+              "flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all flex-1 sm:flex-none",
+              viewMode === "kanban" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-950"
+            )}
+          >
+            <LayoutDashboard size={14} /> Kanban Board
+          </button>
+          <button
+            onClick={() => setViewMode("calendar")}
+            className={cn(
+              "flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all flex-1 sm:flex-none",
+              viewMode === "calendar" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-950"
+            )}
+          >
+            <Calendar size={14} /> Deadline Calendar
+          </button>
+        </div>
+        <Button onClick={() => setAddingCollege(true)} className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-10 px-4 rounded-xl shadow-md shadow-blue-500/10">
+          <Plus size={18} /> Add College
+        </Button>
+      </div>
+
+      {/* Main content display based on viewMode */}
+      {applications.length ? (
+        viewMode === "kanban" ? (
+          <div className="grid gap-4 xl:grid-cols-5 mt-2">
+            {statuses.map((status) => (
+              <KanbanColumn 
+                key={status} 
+                status={status} 
+                apps={applications.filter((app) => app.status === status)} 
+                colleges={colleges} 
+                onEdit={setEditing}
+                onAddNote={setNoting}
+                onMoveStage={handleMoveStage}
+                onRemove={handleRemove}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-2">
+            <DeadlineCalendarView 
+              apps={applications} 
+              colleges={colleges} 
+              onEdit={setEditing} 
+              onAddNote={setNoting}
+              onRemove={handleRemove}
+            />
+          </div>
+        )
+      ) : (
+        <Empty icon={ListChecks} title="Your tracker is empty" action="Add colleges from discovery" to="/colleges" />
+      )}
+
+      {/* Modals */}
+      {editing && (
+        <EditApplication 
+          app={editing} 
+          college={colleges.find((c) => c.id === editing.collegeId)} 
+          onClose={() => setEditing(null)} 
+        />
+      )}
+      {noting && (
+        <NoteModal 
+          app={noting} 
+          collegeName={getCollegeDetails(noting.collegeId, colleges).name} 
+          onClose={() => setNoting(null)} 
+        />
+      )}
+      {addingCollege && (
+        <AddCollegeModal 
+          colleges={colleges} 
+          onClose={() => setAddingCollege(false)} 
+          onAdd={addApplication} 
+        />
+      )}
     </Page>
   );
 }
@@ -665,9 +1432,9 @@ function Profile() {
       <Card className="p-5">
         <form className="grid gap-5 md:grid-cols-2" onSubmit={submit}>
           <Field label="Name"><Input value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} required /></Field>
-          <Field label="Grade"><Select value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} required><option value="">Select grade</option><option>9</option><option>10</option><option>11</option><option>12</option></Select></Field>
+          <Field label="Grade"><Select value={form.grade} onChange={(e) => setForm({ ...form, grade: e.target.value })} required><option value="">Select grade</option><option>9</option><option>10</option><option>11</option><option>12</option><option>Graduate</option></Select></Field>
           <Field label="GPA"><Input type="number" min="0" max="5" step="0.01" value={form.gpa || ""} onChange={(e) => setForm({ ...form, gpa: Number(e.target.value) })} required /></Field>
-          <Field label="State / Location"><Input placeholder="CA" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value.toUpperCase().slice(0, 2) })} required /></Field>
+          <Field label="State / Location (comma-separated)"><Input placeholder="e.g. Maharashtra, Delhi" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} required /></Field>
           <Field label="SAT / ACT"><Input value={form.satAct} onChange={(e) => setForm({ ...form, satAct: e.target.value })} /></Field>
           <Field label="Intended Major"><Input value={form.intendedMajor} onChange={(e) => setForm({ ...form, intendedMajor: e.target.value })} required /></Field>
           <Field label="Activities, comma-separated"><Input value={form.activities.join(", ")} onChange={(e) => updateList("activities", e.target.value)} /></Field>
@@ -736,11 +1503,11 @@ function CollegeCard({ college }: { college: College }) {
     <Card className="flex flex-col justify-between h-full p-5 card-hover relative overflow-hidden bg-white border border-slate-100">
       <div className="space-y-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 font-extrabold text-white text-sm shadow-sm">
+          <div className="flex items-center gap-3 flex-grow min-w-0">
+            <span className="grid size-11 place-items-center rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 font-extrabold text-white text-sm shadow-sm flex-shrink-0">
               {initials(college.name)}
             </span>
-            <div className="max-w-[170px]">
+            <div className="min-w-0 flex-1">
               <h3 className="font-extrabold text-slate-800 leading-snug hover:text-blue-600 transition-colors truncate" title={college.name}>
                 <Link to={`/colleges/${college.id}`}>{college.name}</Link>
               </h3>
@@ -805,89 +1572,635 @@ function CollegeCard({ college }: { college: College }) {
   );
 }
 
-function EditApplication({ app, college, onClose }: { app: Application; college?: College; onClose: () => void }) {
-  const { updateApplication, deleteApplication } = useAuth();
-  const [status, setStatus] = useState<AppStatus>(app.status);
-  const [deadline, setDeadline] = useState(app.deadline.toISOString().slice(0, 10));
-  const [notes, setNotes] = useState(app.notes);
-  async function save() {
+function AddCollegeModal({ colleges, onClose, onAdd }: { colleges: College[]; onClose: () => void; onAdd: (collegeId: string, status: AppStatus, deadline: Date) => Promise<void> }) {
+  const [selectedCollegeId, setSelectedCollegeId] = useState(colleges[0]?.id || "");
+  const [customName, setCustomName] = useState("");
+  const [customType, setCustomType] = useState<"Public" | "Private">("Public");
+  const [status, setStatus] = useState<AppStatus>("Researching");
+  const [deadline, setDeadline] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 3);
+    return d.toISOString().slice(0, 10);
+  });
+  const [loading, setLoading] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
     try {
-      await updateApplication(app.id, { status, deadline: new Date(deadline), notes });
+      let finalCollegeId = selectedCollegeId;
+      if (selectedCollegeId === "custom") {
+        if (!customName.trim()) {
+          alert("Please enter a college name");
+          setLoading(false);
+          return;
+        }
+        finalCollegeId = `Custom:${customName.trim()}|${customType}`;
+      }
+      await onAdd(finalCollegeId, status, new Date(deadline));
       onClose();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save changes");
+      alert(err instanceof Error ? err.message : "Failed to add college");
+    } finally {
+      setLoading(false);
     }
   }
-  async function remove() {
-    try {
-      await deleteApplication(app.id);
-      onClose();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete application");
-    }
-  }
+
   return (
-    <div className="fixed inset-0 z-30 grid place-items-center bg-slate-950/40 p-4">
-      <Card className="w-full max-w-lg p-5">
-        <div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-bold">{college?.name || "Application"}</h2><Button variant="ghost" className="size-9 p-0" onClick={onClose}><X size={18} /></Button></div>
-        <div className="grid gap-4"><Field label="Status"><Select value={status} onChange={(e) => setStatus(e.target.value as AppStatus)}>{statuses.map((s) => <option key={s}>{s}</option>)}</Select></Field><Field label="Deadline"><Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} /></Field><Field label="Notes"><Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Essay draft, financial aid, visit notes" /></Field><div className="flex justify-between"><Button variant="danger" onClick={remove}>Delete</Button><Button onClick={save}>Save changes</Button></div></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
+      <Card className="w-full max-w-lg p-6 bg-white rounded-2xl shadow-xl modal-content">
+        <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-3">
+          <h2 className="text-xl font-extrabold text-slate-900">Add College to Tracker</h2>
+          <Button variant="ghost" className="size-9 p-0 hover:bg-slate-100 rounded-full" onClick={onClose}>
+            <X size={18} className="text-slate-500" />
+          </Button>
+        </div>
+        <form onSubmit={submit} className="grid gap-4">
+          <Field label="College">
+            <Select value={selectedCollegeId} onChange={(e) => setSelectedCollegeId(e.target.value)}>
+              {colleges.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+              <option value="custom">Custom College...</option>
+            </Select>
+          </Field>
+
+          {selectedCollegeId === "custom" && (
+            <div className="grid gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <Field label="College Name">
+                <Input placeholder="Enter college name" value={customName} onChange={(e) => setCustomName(e.target.value)} required />
+              </Field>
+              <Field label="Type">
+                <Select value={customType} onChange={(e) => setCustomType(e.target.value as "Public" | "Private")}>
+                  <option value="Public">Public</option>
+                  <option value="Private">Private</option>
+                </Select>
+              </Field>
+            </div>
+          )}
+
+          <Field label="Target Stage">
+            <Select value={status} onChange={(e) => setStatus(e.target.value as AppStatus)}>
+              {statuses.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field label="Application Deadline">
+            <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+          </Field>
+
+          <div className="flex items-center justify-end gap-3 mt-4 pt-3 border-t border-slate-100">
+            <Button type="button" variant="outline" className="px-4 py-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50" onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/10" disabled={loading}>
+              {loading ? "Adding..." : "Add College"}
+            </Button>
+          </div>
+        </form>
       </Card>
     </div>
   );
 }
 
-function TrackerColumn({ status, apps, colleges, onEdit }: { status: AppStatus; apps: Application[]; colleges: College[]; onEdit: (app: Application) => void }) {
-  const bgClass = cn(
-    "p-4 min-h-[300px] border border-slate-200/50 rounded-2xl transition-all",
-    status === "Researching" && "bg-slate-50/60",
-    status === "Interested" && "bg-blue-50/10 border-blue-100/30",
-    status === "Applying" && "bg-purple-50/10 border-purple-100/30",
-    status === "Submitted" && "bg-amber-50/10 border-amber-100/30",
-    status === "Decision Received" && "bg-emerald-50/10 border-emerald-100/30"
-  );
+function NoteModal({ app, collegeName, onClose }: { app: Application; collegeName: string; onClose: () => void }) {
+  const { updateApplication } = useAuth();
+  const [notes, setNotes] = useState(app.notes);
+  const [loading, setLoading] = useState(false);
 
-  const headerBadgeTone = 
-    status === "Researching" ? "slate" :
-    status === "Interested" ? "blue" :
-    status === "Applying" ? "rose" :
-    status === "Submitted" ? "amber" : "emerald";
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await updateApplication(app.id, { notes });
+      onClose();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to save note");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className={bgClass}>
-      <div className="mb-4 flex items-center justify-between px-1">
-        <h3 className="font-bold text-slate-800 text-sm tracking-wide">{status}</h3>
-        <Badge tone={headerBadgeTone} className="px-2 py-0">{apps.length}</Badge>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
+      <Card className="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl modal-content">
+        <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 className="text-lg font-extrabold text-slate-900">Application Notes</h2>
+            <p className="text-xs text-slate-500 font-medium">{collegeName}</p>
+          </div>
+          <Button variant="ghost" className="size-9 p-0 hover:bg-slate-100 rounded-full" onClick={onClose}>
+            <X size={18} className="text-slate-500" />
+          </Button>
+        </div>
+        <form onSubmit={save} className="grid gap-4">
+          <Field label="Notes">
+            <Textarea
+              rows={4}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Record notes on essay drafts, application checklist, recommendations, etc."
+              autoFocus
+            />
+          </Field>
+          <div className="flex items-center justify-end gap-3 mt-2">
+            <Button type="button" variant="outline" className="px-4 py-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50" onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md" disabled={loading}>
+              {loading ? "Saving..." : "Save Note"}
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+function EditApplication({ app, college, onClose }: { app: Application; college?: College; onClose: () => void }) {
+  const { updateApplication, deleteApplication } = useAuth();
+  const [status, setStatus] = useState<AppStatus>(app.status);
+  const [deadline, setDeadline] = useState(app.deadline.toISOString().slice(0, 10));
+  const [notes, setNotes] = useState(app.notes);
+  const [completeness, setCompleteness] = useState(app.completeness);
+  const [decisionOutcome, setDecisionOutcome] = useState<string>(app.decisionOutcome || "");
+  const [loading, setLoading] = useState(false);
+
+  const handleStatusChange = (newStatus: AppStatus) => {
+    setStatus(newStatus);
+    const defaultComplete = newStatus === "Decision" ? 100 : newStatus === "Submitted" ? 90 : newStatus === "Applying" ? 50 : newStatus === "Shortlisted" ? 30 : 0;
+    setCompleteness(defaultComplete);
+  };
+
+  async function save() {
+    setLoading(true);
+    try {
+      const patch: Partial<Application> = {
+        status,
+        deadline: new Date(deadline),
+        notes,
+        completeness,
+        decisionOutcome: status === "Decision" ? (decisionOutcome as any || null) : null
+      };
+      await updateApplication(app.id, patch);
+      onClose();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to save changes");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function remove() {
+    if (!window.confirm(`Are you sure you want to remove this college from your tracker?`)) return;
+    setLoading(true);
+    try {
+      await deleteApplication(app.id);
+      onClose();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete application");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
+      <Card className="w-full max-w-lg p-6 bg-white rounded-2xl shadow-xl modal-content">
+        <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
+          <h2 className="text-xl font-extrabold text-slate-900">{college?.name || "Edit Application"}</h2>
+          <Button variant="ghost" className="size-9 p-0 hover:bg-slate-100 rounded-full" onClick={onClose}>
+            <X size={18} className="text-slate-500" />
+          </Button>
+        </div>
+        <div className="grid gap-4">
+          <Field label="Status">
+            <Select value={status} onChange={(e) => handleStatusChange(e.target.value as AppStatus)}>
+              {statuses.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </Select>
+          </Field>
+
+          {status === "Decision" && (
+            <Field label="Outcome">
+              <Select value={decisionOutcome} onChange={(e) => setDecisionOutcome(e.target.value)}>
+                <option value="">Awaiting Decision</option>
+                <option value="Accepted">Accepted 🎉</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Waitlisted">Waitlisted</option>
+              </Select>
+            </Field>
+          )}
+
+          <Field label="Deadline">
+            <Input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} required />
+          </Field>
+
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-sm font-semibold text-slate-700">Completeness</span>
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{completeness}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={completeness}
+              onChange={(e) => setCompleteness(Number(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+          </div>
+
+          <Field label="Notes">
+            <Textarea
+              rows={3}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Essay status, letter of recommendation details, or porting notes..."
+            />
+          </Field>
+
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
+            <Button variant="danger" className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold border-rose-100" onClick={remove} disabled={loading}>
+              Delete
+            </Button>
+            <div className="flex items-center gap-3">
+              <Button type="button" variant="outline" className="px-4 py-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50" onClick={onClose} disabled={loading}>
+                Cancel
+              </Button>
+              <Button onClick={save} className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/10" disabled={loading}>
+                {loading ? "Saving..." : "Save changes"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function KanbanCard({
+  app,
+  colleges,
+  onEdit,
+  onAddNote,
+  onMoveStage,
+  onRemove
+}: {
+  app: Application;
+  colleges: College[];
+  onEdit: (app: Application) => void;
+  onAddNote: (app: Application) => void;
+  onMoveStage: (app: Application) => void;
+  onRemove: (app: Application) => void;
+}) {
+  const { name, type, isCustom } = getCollegeDetails(app.collegeId, colleges);
+  const daysLeft = daysUntil(app.deadline);
+  const isUrgent = daysLeft >= 0 && daysLeft <= 14;
+  const isOverdue = daysLeft < 0;
+
+  let borderClass = "border-slate-200/80 hover:border-blue-400";
+  let bgClass = "bg-white";
+  let outcomeBadge = null;
+
+  if (app.status === "Decision") {
+    if (app.decisionOutcome === "Accepted") {
+      borderClass = "border-emerald-300 hover:border-emerald-500";
+      bgClass = "bg-emerald-50/20";
+      outcomeBadge = <Badge tone="emerald" className="font-extrabold text-[9px] uppercase tracking-wider">Accepted 🎉</Badge>;
+    } else if (app.decisionOutcome === "Rejected") {
+      borderClass = "border-rose-200 hover:border-rose-400";
+      bgClass = "bg-rose-50/10";
+      outcomeBadge = <Badge tone="rose" className="font-extrabold text-[9px] uppercase tracking-wider">Rejected</Badge>;
+    } else if (app.decisionOutcome === "Waitlisted") {
+      borderClass = "border-amber-300 hover:border-amber-500";
+      bgClass = "bg-amber-50/20";
+      outcomeBadge = <Badge tone="amber" className="font-extrabold text-[9px] uppercase tracking-wider">Waitlisted</Badge>;
+    } else {
+      borderClass = "border-slate-300 hover:border-slate-400";
+      outcomeBadge = <Badge tone="slate" className="font-extrabold text-[9px] uppercase tracking-wider">Awaiting Decision</Badge>;
+    }
+  }
+
+  return (
+    <Card 
+      className={cn(
+        "kanban-card-enter p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md flex flex-col justify-between border relative group", 
+        borderClass, 
+        bgClass
+      )}
+    >
+      <div onClick={() => onEdit(app)} className="cursor-pointer space-y-3 pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="max-w-[80%]">
+            <h4 className="font-extrabold text-slate-800 text-sm leading-snug truncate" title={name}>{name}</h4>
+            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+              <Badge tone="blue" className="text-[9px] font-bold py-0 px-1.5">{type}</Badge>
+              {isCustom && <Badge tone="slate" className="text-[9px] font-bold py-0 px-1.5">Custom</Badge>}
+              {outcomeBadge}
+            </div>
+          </div>
+          <span className="grid size-7 place-items-center rounded-lg bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+            <Building2 size={14} />
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <Clock size={13} className={cn(isOverdue || isUrgent ? "text-rose-500" : "text-slate-400")} />
+          <p className={cn("text-xs font-bold", 
+            isOverdue ? "text-rose-600" : 
+            isUrgent ? "text-rose-500 urgent-pulse" : 
+            "text-slate-500"
+          )}>
+            {app.deadline.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+            <span className="text-[10px] font-medium ml-1.5">
+              ({isOverdue ? "Overdue" : `${daysLeft} days remaining`})
+            </span>
+          </p>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+            <span>Completeness</span>
+            <span className="text-slate-600">{app.completeness}%</span>
+          </div>
+          <Progress value={app.completeness} />
+        </div>
+
+        {app.notes && (
+          <div className="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-start gap-1.5 mt-1">
+            <MessageSquare size={12} className="text-slate-400 shrink-0 mt-0.5" />
+            <p className="line-clamp-2 text-[10px] text-slate-500 leading-normal font-medium">
+              {app.notes}
+            </p>
+          </div>
+        )}
       </div>
-      <div className="grid gap-3.5">
-        {apps.map((app) => {
-          const college = colleges.find((c) => c.id === app.collegeId);
-          const daysLeft = daysUntil(app.deadline);
-          const isOverdue = daysLeft < 0;
-          return (
+
+      <div className="flex items-center justify-between gap-1.5 border-t border-slate-100 pt-3 mt-2 shrink-0">
+        <Button 
+          variant="ghost" 
+          title="Add Note"
+          className="size-8 p-0 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-lg"
+          onClick={() => onAddNote(app)}
+        >
+          <MessageSquare size={14} />
+        </Button>
+        <Button 
+          variant="ghost" 
+          title="Remove"
+          className="size-8 p-0 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg"
+          onClick={() => onRemove(app)}
+        >
+          <Trash2 size={14} />
+        </Button>
+        
+        {app.status !== "Decision" ? (
+          <Button 
+            variant="outline" 
+            className="flex items-center justify-center gap-1 text-[11px] font-extrabold h-8 px-2.5 rounded-lg border-slate-200/80 text-slate-700 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 ml-auto"
+            onClick={() => onMoveStage(app)}
+          >
+            Move Stage <ArrowRight size={12} />
+          </Button>
+        ) : (
+          <div className="flex items-center gap-1 ml-auto">
             <button
-              key={app.id}
-              className="w-full rounded-xl border border-slate-200/80 bg-white p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/70 hover:shadow-md active:scale-[0.99]"
               onClick={() => onEdit(app)}
+              className="text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-md transition-colors"
             >
-              <p className="font-bold text-slate-800 text-sm truncate">{college?.name || app.collegeId}</p>
-              <p className={cn("text-xs font-semibold mt-1", isOverdue ? "text-rose-600" : daysLeft <= 14 ? "text-amber-600" : "text-slate-400")}>
-                {isOverdue ? "Overdue" : `${daysLeft} days remaining`}
-              </p>
-              {app.notes && (
-                <p className="mt-2.5 line-clamp-2 text-xs text-slate-500/95 leading-relaxed border-t border-slate-50 pt-2 font-medium">
-                  {app.notes}
-                </p>
-              )}
+              Outcome
             </button>
-          );
-        })}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function KanbanColumn({ 
+  status, 
+  apps, 
+  colleges, 
+  onEdit, 
+  onAddNote, 
+  onMoveStage, 
+  onRemove 
+}: { 
+  status: AppStatus; 
+  apps: Application[]; 
+  colleges: College[]; 
+  onEdit: (app: Application) => void;
+  onAddNote: (app: Application) => void;
+  onMoveStage: (app: Application) => void;
+  onRemove: (app: Application) => void;
+}) {
+  const config = {
+    Researching: {
+      bg: "bg-blue-50/30 border-blue-100/50",
+      accent: "bg-blue-500",
+      text: "text-blue-800",
+      border: "border-blue-200",
+      tagTone: "blue" as const
+    },
+    Shortlisted: {
+      bg: "bg-amber-50/30 border-amber-100/50",
+      accent: "bg-amber-500",
+      text: "text-amber-800",
+      border: "border-amber-200",
+      tagTone: "amber" as const
+    },
+    Applying: {
+      bg: "bg-orange-50/30 border-orange-100/50",
+      accent: "bg-orange-500",
+      text: "text-orange-800",
+      border: "border-orange-200",
+      tagTone: "rose" as const
+    },
+    Submitted: {
+      bg: "bg-purple-50/30 border-purple-100/50",
+      accent: "bg-purple-500",
+      text: "text-purple-800",
+      border: "border-purple-200",
+      tagTone: "rose" as const
+    },
+    Decision: {
+      bg: "bg-emerald-50/20 border-emerald-100/40",
+      accent: "bg-emerald-500",
+      text: "text-emerald-800",
+      border: "border-emerald-200",
+      tagTone: "emerald" as const
+    }
+  }[status];
+
+  return (
+    <div className={cn("p-4 rounded-2xl border flex flex-col h-full min-h-[500px]", config.bg)}>
+      <div className="mb-4 flex items-center justify-between px-1.5 pb-2 border-b border-slate-100">
+        <div className="flex items-center gap-2">
+          <span className={cn("size-2 rounded-full", config.accent)} />
+          <h3 className="font-extrabold text-slate-800 text-sm tracking-wide">{status}</h3>
+        </div>
+        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white shadow-sm border text-slate-500">
+          {apps.length}
+        </span>
+      </div>
+
+      <div className="grid gap-3.5 overflow-y-auto max-h-[70vh] pr-1 flex-1">
+        {apps.map((app) => (
+          <KanbanCard
+            key={app.id}
+            app={app}
+            colleges={colleges}
+            onEdit={onEdit}
+            onAddNote={onAddNote}
+            onMoveStage={onMoveStage}
+            onRemove={onRemove}
+          />
+        ))}
         {apps.length === 0 && (
-          <div className="border border-dashed border-slate-200/60 rounded-xl py-10 text-center text-xs text-slate-400/80 font-medium bg-slate-50/20">
-            No applications
+          <div className="border border-dashed border-slate-200/80 rounded-2xl py-12 text-center text-xs text-slate-400 font-bold bg-white/40 flex flex-col items-center justify-center gap-2">
+            <Building2 size={24} className="text-slate-300" />
+            <span>No schools here</span>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function DeadlineCalendarView({ 
+  apps, 
+  colleges, 
+  onEdit, 
+  onAddNote, 
+  onRemove 
+}: { 
+  apps: Application[]; 
+  colleges: College[]; 
+  onEdit: (app: Application) => void;
+  onAddNote: (app: Application) => void;
+  onRemove: (app: Application) => void;
+}) {
+  const sortedApps = useMemo(() => {
+    return [...apps].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  }, [apps]);
+
+  if (sortedApps.length === 0) {
+    return (
+      <Card className="p-8 text-center text-slate-500 bg-white border border-slate-100 rounded-2xl">
+        <Calendar size={32} className="mx-auto text-slate-300 mb-3" />
+        <p className="font-semibold">No deadlines tracked yet.</p>
+        <p className="text-xs text-slate-400 mt-1">Add colleges to start visualizing your deadlines timeline.</p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="overflow-hidden bg-white border border-slate-100 rounded-2xl shadow-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50 text-slate-500 font-bold">
+              <th className="p-4 pl-6 text-xs uppercase tracking-wider font-semibold">College</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold">Status</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold">Deadline</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold">Completeness</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold">Notes</th>
+              <th className="p-4 pr-6 text-right text-xs uppercase tracking-wider font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {sortedApps.map((app) => {
+              const { name, type, isCustom } = getCollegeDetails(app.collegeId, colleges);
+              const daysLeft = daysUntil(app.deadline);
+              const isUrgent = daysLeft >= 0 && daysLeft <= 14;
+              const isOverdue = daysLeft < 0;
+
+              const statusColors = {
+                Researching: "bg-blue-50 text-blue-700 border-blue-100",
+                Shortlisted: "bg-amber-50 text-amber-800 border-amber-100",
+                Applying: "bg-orange-50 text-orange-800 border-orange-100",
+                Submitted: "bg-purple-50 text-purple-700 border-purple-100",
+                Decision: "bg-emerald-50 text-emerald-700 border-emerald-100"
+              }[app.status];
+
+              return (
+                <tr key={app.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="p-4 pl-6">
+                    <div>
+                      <span className="font-extrabold text-slate-900 text-sm hover:text-blue-600 transition-colors cursor-pointer" onClick={() => onEdit(app)}>
+                        {name}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] font-bold text-slate-400">{type}</span>
+                        {isCustom && <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1 py-0.2 rounded">Custom</span>}
+                        {app.status === "Decision" && app.decisionOutcome && (
+                          <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded uppercase tracking-wider">
+                            {app.decisionOutcome}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className={cn("px-2.5 py-0.5 rounded-full text-xs font-bold border", statusColors)}>
+                      {app.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex flex-col">
+                      <span className={cn("font-bold text-sm flex items-center gap-1", 
+                        isOverdue ? "text-rose-600" : isUrgent ? "text-rose-500 urgent-pulse" : "text-slate-700"
+                      )}>
+                        {app.deadline.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                      <span className="text-xs text-slate-400 mt-0.5">
+                        {isOverdue ? "Overdue" : `${daysLeft} days left`}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="p-4 w-44">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <Progress value={app.completeness} />
+                      </div>
+                      <span className="text-xs font-bold text-slate-600 shrink-0 w-8">{app.completeness}%</span>
+                    </div>
+                  </td>
+                  <td className="p-4 max-w-xs">
+                    {app.notes ? (
+                      <span className="text-xs text-slate-500 font-medium line-clamp-1 cursor-pointer hover:text-slate-800" onClick={() => onAddNote(app)}>
+                        {app.notes}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-300 italic font-medium cursor-pointer hover:text-slate-500" onClick={() => onAddNote(app)}>
+                        Add note...
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-4 pr-6 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="ghost" className="size-8 p-0 rounded-lg text-slate-400 hover:text-slate-600" onClick={() => onAddNote(app)} title="Edit Note">
+                        <MessageSquare size={14} />
+                      </Button>
+                      <Button variant="ghost" className="size-8 p-0 rounded-lg text-slate-400 hover:text-slate-600" onClick={() => onEdit(app)} title="Edit details">
+                        <ChevronRight size={16} />
+                      </Button>
+                      <Button variant="ghost" className="size-8 p-0 rounded-lg text-slate-400 hover:text-rose-600" onClick={() => onRemove(app)} title="Remove">
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }
 

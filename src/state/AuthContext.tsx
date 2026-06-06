@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
 import { doc, getDoc, setDoc, addDoc, collection, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { auth, db, firebaseReady } from "../lib/firebase";
-import type { StudentProfile, Application } from "../lib/types";
+import type { StudentProfile, Application, AppStatus } from "../lib/types";
 
 type AuthContextValue = {
   user: User | null;
@@ -15,7 +15,7 @@ type AuthContextValue = {
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   saveProfile: (patch: Partial<StudentProfile>) => Promise<void>;
-  addApplication: (collegeId: string) => Promise<void>;
+  addApplication: (collegeId: string, status?: AppStatus, deadline?: Date) => Promise<void>;
   updateApplication: (id: string, patch: Partial<Application>) => Promise<void>;
   deleteApplication: (id: string) => Promise<void>;
   startDemo: () => void;
@@ -42,7 +42,7 @@ const demoStarterProfile = (): StudentProfile => ({
   email: "alex.morgan@demo.com",
   grade: "11",
   gpa: 3.92,
-  location: "DL",
+  location: "Delhi",
   satAct: "1480",
   intendedMajor: "Computer Science",
   interests: ["Coding", "Robotics", "Design", "Machine Learning"],
@@ -52,29 +52,63 @@ const demoStarterProfile = (): StudentProfile => ({
 });
 
 const demoStarterApplications = (): Application[] => {
-  const d1 = new Date();
-  d1.setMonth(d1.getMonth() + 2);
-  const d2 = new Date();
-  d2.setMonth(d2.getMonth() + 3);
+  const now = new Date();
+  const d = (daysOffset: number) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() + daysOffset);
+    return date;
+  };
   return [
     {
       id: "demo-app-1",
       userId: "demo-user",
-      collegeId: "iit-bombay",
-      status: "Applying",
-      deadline: d1,
-      notes: "JEE Advanced preparation and JoSAA registration details under review.",
+      collegeId: "iit-delhi",
+      status: "Researching",
+      deadline: d(45),
+      notes: "Researching cutoff ranks for Computer Science and Engineering branch.",
+      completeness: 20,
       createdAt: new Date(),
     },
     {
       id: "demo-app-2",
       userId: "demo-user",
-      collegeId: "iit-delhi",
-      status: "Researching",
-      deadline: d2,
-      notes: "Researching cutoff ranks for Computer Science and Engineering branch.",
+      collegeId: "bits-pilani",
+      status: "Shortlisted",
+      deadline: d(30),
+      notes: "BITSAT score meets cutoff. Need to finalize campus preference.",
+      completeness: 40,
       createdAt: new Date(),
-    }
+    },
+    {
+      id: "demo-app-3",
+      userId: "demo-user",
+      collegeId: "iit-bombay",
+      status: "Applying",
+      deadline: d(10),
+      notes: "JEE Advanced preparation and JoSAA registration details under review.",
+      completeness: 65,
+      createdAt: new Date(),
+    },
+    {
+      id: "demo-app-4",
+      userId: "demo-user",
+      collegeId: "iit-madras",
+      status: "Submitted",
+      deadline: d(60),
+      notes: "Application submitted via JoSAA portal. Awaiting seat allotment.",
+      completeness: 90,
+      createdAt: new Date(),
+    },
+    {
+      id: "demo-app-5",
+      userId: "demo-user",
+      collegeId: "nit-trichy",
+      status: "Decision",
+      deadline: d(5),
+      notes: "Received offer for CS branch. Need to confirm by deadline.",
+      completeness: 100,
+      createdAt: new Date(),
+    },
   ];
 };
 
@@ -83,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState("");
-  const [isDemo, setIsDemo] = useState<boolean>(!firebaseReady);
+  const [isDemo, setIsDemo] = useState<boolean>(() => localStorage.getItem("careercompass_is_demo") === "true");
   const [applications, setApplications] = useState<Application[]>([]);
 
   useEffect(() => {
@@ -176,6 +210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
         setProfile(null);
         setApplications([]);
+        localStorage.removeItem("careercompass_is_demo");
       } else {
         await signOut(auth);
       }
@@ -195,17 +230,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await setDoc(doc(db, "users", user.uid), updated, { merge: true });
       setProfile(updated);
     },
-    async addApplication(collegeId) {
+    async addApplication(collegeId, status?: AppStatus, deadline?: Date) {
+      const targetStatus = status || "Researching";
+      const targetDeadline = deadline || (() => {
+        const d = new Date();
+        d.setMonth(d.getMonth() + 3);
+        return d;
+      })();
+      const completeness = targetStatus === "Decision" ? 100 : targetStatus === "Submitted" ? 90 : targetStatus === "Applying" ? 50 : targetStatus === "Shortlisted" ? 30 : 0;
+
       if (isDemo) {
-        const deadline = new Date();
-        deadline.setMonth(deadline.getMonth() + 3);
         const newApp: Application = {
           id: `demo-app-${Date.now()}`,
           userId: "demo-user",
           collegeId,
-          status: "Researching",
-          deadline,
+          status: targetStatus,
+          deadline: targetDeadline,
           notes: "",
+          completeness,
           createdAt: new Date(),
         };
         const updated = [...applications, newApp];
@@ -215,14 +257,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!user || !firebaseReady) {
           throw new Error("Connect Firebase and sign in to add tracker records.");
         }
-        const deadline = new Date();
-        deadline.setMonth(deadline.getMonth() + 3);
         await addDoc(collection(db, "applications"), {
           userId: user.uid,
           collegeId,
-          status: "Researching",
-          deadline: Timestamp.fromDate(deadline),
+          status: targetStatus,
+          deadline: Timestamp.fromDate(targetDeadline),
           notes: "",
+          completeness,
           createdAt: serverTimestamp(),
         });
       }
@@ -253,6 +294,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     startDemo() {
       setIsDemo(true);
+      localStorage.setItem("careercompass_is_demo", "true");
     },
   }), [authError, loading, profile, user, isDemo, applications]);
 

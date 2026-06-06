@@ -1,5 +1,5 @@
 export type GrowthOutlook = "High" | "Medium" | "Low";
-export type AppStatus = "Researching" | "Interested" | "Applying" | "Submitted" | "Decision Received";
+export type AppStatus = "Researching" | "Shortlisted" | "Applying" | "Submitted" | "Decision";
 
 export type StudentProfile = {
   displayName: string;
@@ -48,5 +48,7 @@ export type Application = {
   status: AppStatus;
   deadline: Date;
   notes: string;
+  completeness: number;
+  decisionOutcome?: "Accepted" | "Rejected" | "Waitlisted";
   createdAt: Date;
 };

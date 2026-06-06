@@ -67,3 +67,7 @@ export function Field({ label, children, error }: { label: string; children: Rea
     </label>
   );
 }
+
+export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={cn("w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 resize-none", className)} {...props} />;
+}
