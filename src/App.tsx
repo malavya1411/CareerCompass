@@ -5,7 +5,7 @@ import { BarChart3, BookOpen, BriefcaseBusiness, CalendarClock, Check, Compass, 
 import { db, firebaseReady } from "./lib/firebase";
 import { careerSeeds, collegeSeeds, seedDataIfNeeded } from "./lib/seedData";
 import type { Application, AppStatus, Career, College, StudentProfile } from "./lib/types";
-import { categories, cn, daysUntil, formatMoney, growthScore, initials, majorOverlap, profileIncomplete, statuses } from "./lib/utils";
+import { categories, cn, daysUntil, formatMoney, growthScore, initials, majorOverlap, profileIncomplete, statuses, calculateFitScore } from "./lib/utils";
 import { useAuth } from "./state/AuthContext";
 import { useCompare } from "./state/CompareContext";
 import { Badge, Button, Card, Field, Input, Progress, Select, Separator } from "./components/ui";
@@ -341,24 +341,226 @@ function CareerDetails() {
 }
 
 function CollegeExplorer() {
+  const { profile } = useAuth();
   const { colleges } = useCatalog();
   const [search, setSearch] = useState("");
   const [state, setState] = useState("All");
-  const [type, setType] = useState("All");
-  const [major, setMajor] = useState("All");
-  const [maxTuition, setMaxTuition] = useState(70000);
-  const allMajors = Array.from(new Set(colleges.flatMap((college) => college.majors))).sort();
-  const filtered = colleges.filter((college) => college.name.toLowerCase().includes(search.toLowerCase()) && (state === "All" || college.state === state) && (type === "All" || college.type === type) && college.tuition <= maxTuition && (major === "All" || college.majors.includes(major)));
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [maxAcceptanceRate, setMaxAcceptanceRate] = useState<number>(100);
+  const [maxCost, setMaxCost] = useState<number>(1500000);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<string>("Fit Score");
+
+  const toggleType = (type: string) => {
+    setSelectedTypes(prev => 
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
+  };
+
+  const toggleSize = (size: string) => {
+    setSelectedSizes(prev => 
+      prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]
+    );
+  };
+
+  const states = Array.from(new Set(colleges.map((c) => c.state))).sort();
+
+  const filtered = colleges.filter((college) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || 
+      college.name.toLowerCase().includes(q) ||
+      college.city.toLowerCase().includes(q) ||
+      college.state.toLowerCase().includes(q) ||
+      college.majors.some(m => m.toLowerCase().includes(q));
+
+    const matchesState = state === "All" || college.state === state;
+    const matchesType = selectedTypes.length === 0 || selectedTypes.includes(college.type);
+    const matchesAcceptance = college.acceptanceRate <= maxAcceptanceRate;
+    const matchesCost = college.tuition <= maxCost;
+
+    const sizeCategory = college.enrollment < 5000 ? "Small" : college.enrollment <= 15000 ? "Medium" : "Large";
+    const matchesSize = selectedSizes.length === 0 || selectedSizes.includes(sizeCategory);
+
+    return matchesSearch && matchesState && matchesType && matchesAcceptance && matchesCost && matchesSize;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "Fit Score") {
+      return calculateFitScore(profile, b) - calculateFitScore(profile, a);
+    }
+    if (sortBy === "Acceptance Rate") {
+      return a.acceptanceRate - b.acceptanceRate;
+    }
+    if (sortBy === "Cost") {
+      return a.tuition - b.tuition;
+    }
+    if (sortBy === "Name") {
+      return a.name.localeCompare(b.name);
+    }
+    return 0;
+  });
+
+  const clearFilters = () => {
+    setSearch("");
+    setState("All");
+    setSelectedTypes([]);
+    setMaxAcceptanceRate(100);
+    setMaxCost(1500000);
+    setSelectedSizes([]);
+    setSortBy("Fit Score");
+  };
+
   return (
     <Page title="College Explorer" subtitle="Browse, save, compare, and add schools to your application tracker.">
-      <Toolbar>
-        <div className="relative min-w-64 flex-1"><Search className="absolute left-3 top-2.5 text-slate-400" size={18} /><Input className="pl-10" placeholder="Search colleges" value={search} onChange={(e) => setSearch(e.target.value)} /></div>
-        <Select value={state} onChange={(e) => setState(e.target.value)}><option>All</option>{Array.from(new Set(colleges.map((c) => c.state))).map((s) => <option key={s}>{s}</option>)}</Select>
-        <Select value={type} onChange={(e) => setType(e.target.value)}><option>All</option><option>Public</option><option>Private</option></Select>
-        <Select value={major} onChange={(e) => setMajor(e.target.value)}><option>All</option>{allMajors.map((m) => <option key={m}>{m}</option>)}</Select>
-        <Field label={`Max tuition ${formatMoney(maxTuition)}`}><input type="range" min="10000" max="70000" step="1000" value={maxTuition} onChange={(e) => setMaxTuition(Number(e.target.value))} /></Field>
-      </Toolbar>
-      <CardGrid items={filtered} render={(college) => <CollegeCard college={college} />} />
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <Card className="p-5 h-fit space-y-6 bg-white border border-slate-200/60 shadow-sm rounded-xl">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 className="font-bold text-slate-800 flex items-center gap-2 text-base">
+              <SlidersHorizontal size={18} /> Filters
+            </h2>
+            <button 
+              className="text-xs text-blue-600 hover:text-blue-700 font-semibold"
+              onClick={clearFilters}
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Location (State)</label>
+            <Select value={state} onChange={(e) => setState(e.target.value)}>
+              <option value="All">All States</option>
+              {states.map((s) => <option key={s} value={s}>{s}</option>)}
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">College Type</label>
+            <div className="space-y-2">
+              {["Public", "Private"].map((t) => (
+                <label key={t} className="flex items-center gap-2 text-sm text-slate-600 font-medium cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(t)}
+                    onChange={() => toggleType(t)}
+                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  {t}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <span>Acceptance Rate</span>
+              <span className="text-blue-600 font-bold">≤ {maxAcceptanceRate}%</span>
+            </div>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
+              step="1" 
+              value={maxAcceptanceRate} 
+              onChange={(e) => setMaxAcceptanceRate(Number(e.target.value))} 
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <span>Max Annual Cost</span>
+              <span className="text-blue-600 font-bold">{formatMoney(maxCost)}</span>
+            </div>
+            <input 
+              type="range" 
+              min="0" 
+              max="1500000" 
+              step="25000" 
+              value={maxCost} 
+              onChange={(e) => setMaxCost(Number(e.target.value))} 
+              className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Campus Size</label>
+            <div className="space-y-2">
+              {[
+                { name: "Small", label: "Small (< 5k)" },
+                { name: "Medium", label: "Medium (5k - 15k)" },
+                { name: "Large", label: "Large (> 15k)" }
+              ].map((sz) => (
+                <label key={sz.name} className="flex items-center gap-2 text-sm text-slate-600 font-medium cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedSizes.includes(sz.name)}
+                    onChange={() => toggleSize(sz.name)}
+                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  {sz.label}
+                </label>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+              <Input 
+                className="pl-10 h-10 border-slate-200/80 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                placeholder="Search colleges by name, location, or major" 
+                value={search} 
+                onChange={(e) => setSearch(e.target.value)} 
+              />
+              {search && (
+                <button 
+                  type="button"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                  onClick={() => setSearch("")}
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 min-w-48">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Sort By</label>
+              <Select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="h-10 border-slate-200/80 bg-white"
+              >
+                <option value="Fit Score">Fit Match Score</option>
+                <option value="Acceptance Rate">Acceptance Rate</option>
+                <option value="Cost">Cost (Low to High)</option>
+                <option value="Name">Name</option>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wide px-1">
+            <span>Found {sorted.length} colleges</span>
+          </div>
+
+          {sorted.length > 0 ? (
+            <CardGrid items={sorted} render={(college) => <CollegeCard college={college} />} />
+          ) : (
+            <Card className="grid place-items-center gap-4 p-12 text-center border-dashed border-2 border-slate-200 bg-slate-50/20">
+              <span className="grid size-14 place-items-center rounded-lg bg-slate-100 text-slate-400">
+                <Search size={24} />
+              </span>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">No colleges match your filters</h3>
+                <p className="text-sm text-slate-500 mt-1">Try relaxing your cost limits or checking different locations.</p>
+              </div>
+              <Button onClick={clearFilters}>Reset Filters</Button>
+            </Card>
+          )}
+        </div>
+      </div>
     </Page>
   );
 }
@@ -517,33 +719,88 @@ function CareerCard({ career }: { career: Career }) {
 
 function CollegeCard({ college }: { college: College }) {
   const { profile, saveProfile } = useAuth();
-  const { compareIds, toggleCompare } = useCompare();
   const saved = profile?.savedColleges?.includes(college.id);
+  const fitScore = calculateFitScore(profile, college);
+  const navigate = useNavigate();
+
+  let fitBadgeClass = "";
+  if (fitScore >= 80) {
+    fitBadgeClass = "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+  } else if (fitScore >= 60) {
+    fitBadgeClass = "bg-amber-50 text-amber-700 border-amber-200/60";
+  } else {
+    fitBadgeClass = "bg-rose-50 text-rose-700 border-rose-200/60";
+  }
+
   return (
-    <Card className="grid h-full gap-3 p-5 card-hover justify-between">
-      <div className="flex items-start justify-between gap-3">
-        <CollegeMark college={college} />
-        <div className="flex gap-1">
-          <Button variant="ghost" className="size-9 p-0 rounded-full hover:bg-rose-50 hover:text-rose-600" title="Save college" onClick={() => toggleSaved(profile, saveProfile, college.id)}>
-            <Heart size={18} className={cn("transition-all", saved ? "fill-rose-500 text-rose-500 scale-110" : "text-slate-400")} />
+    <Card className="flex flex-col justify-between h-full p-5 card-hover relative overflow-hidden bg-white border border-slate-100">
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 font-extrabold text-white text-sm shadow-sm">
+              {initials(college.name)}
+            </span>
+            <div className="max-w-[170px]">
+              <h3 className="font-extrabold text-slate-800 leading-snug hover:text-blue-600 transition-colors truncate" title={college.name}>
+                <Link to={`/colleges/${college.id}`}>{college.name}</Link>
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold flex items-center gap-1 mt-0.5">
+                <MapPin size={12} /> {college.city}, {college.state}
+              </p>
+            </div>
+          </div>
+          
+          <Button
+            variant="ghost"
+            className="size-9 p-0 rounded-full hover:bg-rose-50"
+            title={saved ? "Saved" : "Save College"}
+            onClick={() => toggleSaved(profile, saveProfile, college.id)}
+          >
+            <Heart size={18} className={cn("transition-all duration-200", saved ? "fill-rose-500 text-rose-500 scale-110" : "text-slate-400")} />
           </Button>
-          <Button variant="ghost" className="size-9 p-0 rounded-full hover:bg-blue-50" title="Compare" onClick={() => toggleCompare(college.id)}>
-            <BarChart3 size={18} className={cn("transition-all", compareIds.includes(college.id) ? "text-blue-600 scale-110" : "text-slate-400")} />
-          </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1", fitBadgeClass)}>
+            🎯 {fitScore}% Match
+          </span>
+          <Badge tone="blue" className="text-[9px] font-bold py-0.5">{college.type}</Badge>
+          <Badge tone="slate" className="text-[9px] font-bold py-0.5">{college.acceptanceRate}% Acc.</Badge>
+        </div>
+
+        <div className="pt-1">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avg Cost / Year</p>
+          <p className="text-base font-extrabold text-slate-900 mt-0.5">{formatMoney(college.tuition)}</p>
+        </div>
+
+        <div className="pt-1">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Top Majors</p>
+          <div className="flex flex-wrap gap-1">
+            {college.majors.slice(0, 3).map((major) => (
+              <Badge key={major} tone="slate" className="text-[9px] py-0 px-1.5 border-slate-200 bg-slate-50 text-slate-600 font-bold">
+                {major}
+              </Badge>
+            ))}
+          </div>
         </div>
       </div>
-      <Link to={`/colleges/${college.id}`} className="grid gap-3 pt-2">
-        <div>
-          <h3 className="text-lg font-bold text-slate-800 hover:text-blue-600 transition-colors">{college.name}</h3>
-          <p className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-0.5"><MapPin size={12} /> {college.city}, {college.state}</p>
-        </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-xs text-slate-500 font-medium">
-          <span className="flex items-center gap-1.5">🎯 {college.acceptanceRate}% accepted</span>
-          <span className="flex items-center gap-1.5">💰 {formatMoney(college.tuition)}/yr</span>
-          <span className="flex items-center gap-1.5">👥 {college.enrollment.toLocaleString()} students</span>
-          <span className="flex items-center gap-1.5">🏫 {college.type}</span>
-        </div>
-      </Link>
+
+      <div className="grid grid-cols-2 gap-2 mt-5 pt-3.5 border-t border-slate-100">
+        <Button 
+          variant="outline" 
+          className="text-xs font-bold py-1.5 hover:bg-slate-50 border-slate-200 text-slate-700 h-9"
+          onClick={() => navigate(`/colleges/${college.id}`)}
+        >
+          View Details
+        </Button>
+        <Button
+          variant={saved ? "primary" : "outline"}
+          className={cn("text-xs font-bold py-1.5 transition-all duration-200 h-9", saved ? "bg-rose-600 border-rose-600 text-white hover:bg-rose-700" : "border-slate-200 hover:bg-slate-50")}
+          onClick={() => toggleSaved(profile, saveProfile, college.id)}
+        >
+          {saved ? "Saved" : "Save"}
+        </Button>
+      </div>
     </Card>
   );
 }
