@@ -14,7 +14,7 @@ export function growthScore(outlook: GrowthOutlook) {
 }
 
 export function formatMoney(value: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(value);
 }
 
 export function daysUntil(date: Date) {

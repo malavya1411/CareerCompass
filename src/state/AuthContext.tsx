@@ -42,13 +42,13 @@ const demoStarterProfile = (): StudentProfile => ({
   email: "alex.morgan@demo.com",
   grade: "11",
   gpa: 3.92,
-  location: "CA",
+  location: "DL",
   satAct: "1480",
   intendedMajor: "Computer Science",
   interests: ["Coding", "Robotics", "Design", "Machine Learning"],
   careerInterests: ["STEM", "Arts"],
   activities: ["Robotics Club (VP)", "Varsity Tennis", "Hackathon Organizer"],
-  savedColleges: ["stanford", "uc-berkeley"],
+  savedColleges: ["iit-delhi", "iit-bombay"],
 });
 
 const demoStarterApplications = (): Application[] => {
@@ -60,19 +60,19 @@ const demoStarterApplications = (): Application[] => {
     {
       id: "demo-app-1",
       userId: "demo-user",
-      collegeId: "uc-berkeley",
+      collegeId: "iit-bombay",
       status: "Applying",
       deadline: d1,
-      notes: "UC Application draft in progress. Working on personal insight questions.",
+      notes: "JEE Advanced preparation and JoSAA registration details under review.",
       createdAt: new Date(),
     },
     {
       id: "demo-app-2",
       userId: "demo-user",
-      collegeId: "stanford",
+      collegeId: "iit-delhi",
       status: "Researching",
       deadline: d2,
-      notes: "Attending virtual info session next week. Need to contact counselor.",
+      notes: "Researching cutoff ranks for Computer Science and Engineering branch.",
       createdAt: new Date(),
     }
   ];
