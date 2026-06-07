@@ -224,368 +224,148 @@ export function Dashboard() {
   }, [profile, saved]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto text-[#E1DCC9]">
-      <div className="grid grid-cols-12 gap-6">
-        
-        {/* Row 1: Journey Progress (Espresso background with walnut gradient) */}
-        <div className="col-span-12 lg:col-span-8 bg-gradient-to-br from-[#1F150C] to-[#2B1E10] border border-[rgba(225,220,201,0.08)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+    <div className="mx-auto max-w-7xl space-y-10 text-[#111111] dark:text-[#E1DCC9]">
+      <section className="border-b border-[rgba(0,0,0,0.08)] pb-8 dark:border-[rgba(225,220,201,0.08)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8B8B8B] dark:text-[rgba(225,220,201,0.45)]">Academic Workspace</p>
+        <div className="mt-3 grid gap-6 lg:grid-cols-[1fr_320px] lg:items-end">
           <div>
-            <h1 className="text-3xl font-heading font-extrabold text-[#F5F2EA]">
-              Welcome back, {profile?.displayName || "Student"}
+            <h1 className="font-heading text-5xl font-extrabold leading-[0.95] md:text-6xl">
+              Good Morning, {profile?.displayName?.split(" ")[0] || "Alex"}
             </h1>
-            <p className="text-sm text-[rgba(225,220,201,0.7)] font-sans mt-1">
-              You're <span className="font-number font-bold text-[#FFFFFF]">{completionPercentage}%</span> complete with your college planning journey.
+            <p className="mt-4 max-w-2xl text-base font-medium leading-relaxed text-[#5A5A5A] dark:text-[rgba(225,220,201,0.7)]">
+              Your college readiness score improved by <span className="font-number font-semibold text-[#4C43CD] dark:text-[#E1DCC9]">6%</span> this month.
             </p>
           </div>
-
-          <div className="mt-6">
-            <div className="h-2.5 w-full rounded-full bg-[#000000]/40 overflow-hidden border border-[rgba(225,220,201,0.04)] mb-4">
-              <div 
-                className="h-full bg-gradient-to-r from-[#E1DCC9] to-[#FFFFFF] transition-all duration-750 ease-out" 
-                style={{ width: `${completionPercentage}%` }} 
-              />
+          <div className="rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] p-5 dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#8B8B8B] dark:text-[rgba(225,220,201,0.45)]">Readiness</span>
+              <Badge tone={readinessScore.score >= 75 ? "emerald" : readinessScore.score >= 50 ? "blue" : "slate"}>{readinessScore.label}</Badge>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {milestones.map((m) => (
-                <div 
-                  key={m.id} 
-                  className="flex items-center gap-2 text-[11px] font-semibold text-[rgba(225,220,201,0.75)]"
-                >
-                  {m.completed ? (
-                    <CheckCircle2 size={14} className="text-[#4CAF50] shrink-0" />
-                  ) : (
-                    <Circle size={14} className="text-[rgba(225,220,201,0.25)] shrink-0" />
-                  )}
-                  <span className="truncate">{m.label}</span>
+            <div className="mt-4 flex items-end gap-2">
+              <span className="font-number text-5xl font-semibold leading-none">{readinessScore.score}</span>
+              <span className="pb-1 text-sm font-semibold text-[#8B8B8B] dark:text-[rgba(225,220,201,0.5)]">/ 100</span>
+            </div>
+            <Progress value={readinessScore.score} />
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-heading text-2xl font-bold">Journey Progress</h2>
+          <span className="font-number text-sm font-semibold text-[#4C43CD] dark:text-[#E1DCC9]">{completionPercentage}% complete</span>
+        </div>
+        <div className="relative grid gap-4 md:grid-cols-5">
+          <div className="absolute left-0 right-0 top-4 hidden h-px bg-[rgba(0,0,0,0.08)] md:block dark:bg-[rgba(225,220,201,0.08)]" />
+          {milestones.map((m) => (
+            <div key={m.id} className="relative flex gap-3 md:block">
+              <span className={cn("relative z-10 grid size-8 shrink-0 place-items-center rounded-full border bg-[#F7F5E8] dark:bg-black", m.completed ? "border-[#4CAF50] text-[#4CAF50]" : "border-[rgba(0,0,0,0.12)] text-[#8B8B8B] dark:border-[rgba(225,220,201,0.16)]")}>
+                {m.completed ? <CheckCircle2 size={16} /> : <Circle size={16} />}
+              </span>
+              <p className="mt-1 text-sm font-semibold text-[#5A5A5A] dark:text-[rgba(225,220,201,0.68)]">{m.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div className="space-y-8">
+          <div>
+            <h2 className="font-heading text-2xl font-bold">Academic Snapshot</h2>
+            <div className="mt-4 grid border-y border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] sm:grid-cols-5">
+              {[
+                ["GPA", profile?.gpa ? profile.gpa.toFixed(2) : "N/A"],
+                ["SAT / ACT", profile?.satAct || "N/A"],
+                ["Target Major", profile?.intendedMajor || "Exploring"],
+                ["Top Match", recommendedColleges[0]?.name || "TBD"],
+                ["Applications", applications.length],
+              ].map(([label, value]) => (
+                <div key={label} className="border-b border-[rgba(0,0,0,0.08)] py-4 sm:border-b-0 sm:border-r sm:pr-4 sm:last:border-r-0 dark:border-[rgba(225,220,201,0.08)]">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8B8B8B] dark:text-[rgba(225,220,201,0.45)]">{label}</p>
+                  <p className="mt-2 truncate font-number text-xl font-semibold text-[#111111] dark:text-[#F5F2EA]" title={String(value)}>{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-heading text-2xl font-bold">Recommended Actions</h2>
+            <div className="mt-3 divide-y divide-[rgba(0,0,0,0.08)] border-y border-[rgba(0,0,0,0.08)] dark:divide-[rgba(225,220,201,0.08)] dark:border-[rgba(225,220,201,0.08)]">
+              {nextActions.map((action) => (
+                <Link key={action.id} to={action.to} className="group flex items-center justify-between gap-4 py-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8B8B8B] dark:text-[rgba(225,220,201,0.45)]">{action.type}</p>
+                    <p className="mt-1 font-heading text-lg font-bold text-[#111111] dark:text-[#F5F2EA]">{action.title}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2 text-sm font-semibold text-[#4C43CD] dark:text-[#E1DCC9]">
+                    <span>{action.due}</span>
+                    <ArrowRight size={15} className="transition-transform group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="font-heading text-2xl font-bold">Career Matches & Strategic Rationale</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {recommendedCareers.map((career) => (
+                <div key={career.id} className="rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] p-5 dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111]">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8B8B8B] dark:text-[rgba(225,220,201,0.45)]">Career Match</p>
+                      <h3 className="mt-1 font-heading text-lg font-bold text-[#111111] dark:text-[#F5F2EA]">{career.title}</h3>
+                    </div>
+                    <Badge tone="emerald">High Match</Badge>
+                  </div>
+                  <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-[#5A5A5A] dark:text-[rgba(225,220,201,0.68)]">{career.description}</p>
+                  <p className="mt-4 border-t border-[rgba(0,0,0,0.08)] pt-4 text-xs font-medium leading-relaxed text-[#5A5A5A] dark:border-[rgba(225,220,201,0.08)] dark:text-[rgba(225,220,201,0.72)]">
+                    {career.matchExplanation || "Matches your academic preferences and industry interests."}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Row 1: Academic Snapshot */}
-        <div className="col-span-12 lg:col-span-4 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Award className="text-[#E1DCC9]" size={18} />
-              <h2 className="text-sm font-heading font-extrabold text-[#F5F2EA] uppercase tracking-wider">
-                Academic Snapshot
-              </h2>
-            </div>
-            
-            <div className="divide-y divide-[rgba(225,220,201,0.08)]">
-              <div className="py-2.5 flex items-center justify-between">
-                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">Cumulative GPA</span>
-                <span className="font-number font-extrabold text-sm text-[#FFFFFF]">
-                  {profile?.gpa ? profile.gpa.toFixed(2) : "N/A"}
-                </span>
-              </div>
-              <div className="py-2.5 flex items-center justify-between">
-                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">SAT / ACT Score</span>
-                <span className="font-number font-extrabold text-sm text-[#FFFFFF]">
-                  {profile?.satAct || "N/A"}
-                </span>
-              </div>
-              <div className="py-2.5 flex items-center justify-between">
-                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">Saved Colleges</span>
-                <span className="font-number font-extrabold text-sm text-[#FFFFFF]">
-                  {saved.length}
-                </span>
-              </div>
-              <div className="py-2.5 flex items-center justify-between">
-                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">Competitiveness</span>
-                <Badge tone={competitiveness === "Highly Competitive" ? "emerald" : competitiveness === "Competitive" ? "blue" : "slate"}>
-                  {competitiveness}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <Link to="/profile" className="mt-4">
-            <button className="w-full text-center py-2 bg-[#412D15] text-[#E1DCC9] border border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl hover:bg-[#523A1D] transition-all duration-200">
-              Update Profile Academics
-            </button>
-          </Link>
-        </div>
-
-        {/* Row 2: Recommended Next Actions */}
-        <div className="col-span-12 lg:col-span-8 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)]">
-          <h2 className="text-base font-heading font-extrabold text-[#F5F2EA] mb-4">
-            Recommended Next Actions
-          </h2>
-          <div className="space-y-3">
-            {nextActions.map((action) => (
-              <Link 
-                key={action.id} 
-                to={action.to}
-                className={cn(
-                  "flex flex-col sm:flex-row sm:items-center justify-between border rounded-xl p-4 transition-all duration-200 hover:bg-[#1A1A1A] hover:-translate-y-0.5 shadow-sm", 
-                  action.color
-                )}
-              >
-                <div className="space-y-1">
-                  <span className="text-[9px] font-sans font-bold tracking-widest uppercase opacity-75">{action.type}</span>
-                  <p className="font-heading font-bold text-sm text-[#FFFFFF]">{action.title}</p>
-                </div>
-                <div className="flex items-center gap-2 mt-2 sm:mt-0 text-xs font-sans font-bold shrink-0 self-end sm:self-center">
-                  <span>{action.due}</span>
-                  <ArrowRight size={14} />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 2: Upcoming Deadlines */}
-        <div className="col-span-12 lg:col-span-4 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
-          <div>
-            <h2 className="text-sm font-heading font-extrabold text-[#F5F2EA] uppercase tracking-wider mb-4">
-              Upcoming Deadlines
-            </h2>
-            
-            {upcomingDeadlines.length === 0 ? (
-              <div className="py-6 text-center text-xs text-[rgba(225,220,201,0.5)] font-sans">
-                No active application deadlines. Save colleges and shortlist them to track dates.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {upcomingDeadlines.map((dead) => (
-                  <div 
-                    key={dead.id} 
-                    className="p-3 bg-[#1A1A1A]/60 border border-[rgba(225,220,201,0.04)] rounded-xl flex items-center justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-heading font-bold text-[#FFFFFF] truncate">{dead.collegeName}</p>
-                      <p className="text-[10px] text-[rgba(225,220,201,0.5)] font-sans mt-0.5">{dead.deadlineDate} • {dead.status}</p>
-                    </div>
-                    <div className={cn(
-                      "shrink-0 px-2 py-1 rounded text-[10px] font-sans font-bold",
-                      dead.daysLeft <= 7 ? "bg-[rgba(201,74,74,0.15)] text-[#C94A4A] animate-pulse" : "bg-[#1F150C] text-[#E1DCC9]"
-                    )}>
-                      {dead.daysLeft !== null ? (dead.daysLeft < 0 ? "Overdue" : `${dead.daysLeft}d left`) : "TBD"}
-                    </div>
+        <aside className="space-y-6">
+          <div className="rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] p-5 dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111]">
+            <h2 className="font-heading text-xl font-bold">Upcoming Deadlines</h2>
+            <div className="mt-4 divide-y divide-[rgba(0,0,0,0.08)] dark:divide-[rgba(225,220,201,0.08)]">
+              {upcomingDeadlines.length === 0 ? (
+                <p className="py-6 text-sm text-[#8B8B8B] dark:text-[rgba(225,220,201,0.5)]">No active application deadlines.</p>
+              ) : upcomingDeadlines.map((dead) => (
+                <div key={dead.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#111111] dark:text-[#F5F2EA]">{dead.collegeName}</p>
+                    <p className="text-xs text-[#8B8B8B] dark:text-[rgba(225,220,201,0.5)]">{dead.deadlineDate} / {dead.status}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <Link to="/tracker" className="mt-4">
-            <button className="w-full text-center py-2 bg-[#412D15] text-[#E1DCC9] border border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl hover:bg-[#523A1D] transition-all duration-200">
-              View Tracker Calendar
-            </button>
-          </Link>
-        </div>
-
-        {/* Row 3: Career Matches */}
-        <div className="col-span-12 lg:col-span-8 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)]">
-          <h2 className="text-base font-heading font-extrabold text-[#F5F2EA] mb-4">
-            Career Matches & Strategic Rationale
-          </h2>
-          
-          <div className="grid gap-4 md:grid-cols-2">
-            {recommendedCareers.map((career) => (
-              <div 
-                key={career.id}
-                className="bg-[#1A1A1A]/40 border border-[rgba(225,220,201,0.05)] rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-[rgba(225,220,201,0.5)]">Career Match</span>
-                    <Badge tone="emerald">High Match</Badge>
-                  </div>
-                  <h3 className="font-heading font-extrabold text-sm text-[#FFFFFF] mt-2">
-                    {career.title}
-                  </h3>
-                  <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mt-1 line-clamp-2">
-                    {career.description}
-                  </p>
+                  <Badge tone={dead.daysLeft <= 7 ? "rose" : "slate"}>{dead.daysLeft < 0 ? "Overdue" : `${dead.daysLeft}d`}</Badge>
                 </div>
-
-                <div className="bg-[#1F150C]/60 p-3 rounded-xl border border-[rgba(225,220,201,0.06)] text-[11px] mt-3">
-                  <span className="font-sans font-bold text-[rgba(225,220,201,0.4)] block text-[9px] uppercase tracking-wide">Why Recommended</span>
-                  <p className="text-[rgba(225,220,201,0.8)] font-sans font-medium mt-1 leading-relaxed">
-                    {career.matchExplanation || "Matches your STEM academic preferences and technical assessments."}
-                  </p>
-                </div>
-
-                <Link 
-                  to={`/careers/${career.id}`}
-                  className="text-xs font-sans font-bold text-[#E1DCC9] hover:text-[#FFFFFF] flex items-center gap-1.5 pt-3 mt-auto border-t border-[rgba(225,220,201,0.06)]"
-                >
-                  View Career Path <ArrowRight size={14} />
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Row 3: College Insights (Cost vs Salary Chart) */}
-        <div className="col-span-12 lg:col-span-4 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-heading font-extrabold text-[#F5F2EA] uppercase tracking-wider">
-                College ROI Insights
-              </h2>
-              <BarChart3 className="text-[rgba(225,220,201,0.5)]" size={16} />
+              ))}
             </div>
-            
-            <p className="text-[10px] text-[rgba(225,220,201,0.6)] font-sans font-medium mb-3">
-              Side-by-side: Tuition fees vs average starting salary for saved colleges.
-            </p>
+          </div>
 
-            <div className="h-44 w-full font-number text-[8px]">
+          <div className="rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] p-5 dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111]">
+            <div className="flex items-center justify-between">
+              <h2 className="font-heading text-xl font-bold">College ROI Insights</h2>
+              <BarChart3 className="text-[#8B8B8B] dark:text-[rgba(225,220,201,0.5)]" size={16} />
+            </div>
+            <div className="mt-4 h-48 w-full font-number text-[10px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <CartesianGrid stroke="rgba(225,220,201,0.08)" strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} stroke="rgba(225,220,201,0.4)" tick={{ fill: '#E1DCC9' }} />
-                  <YAxis tickLine={false} axisLine={false} stroke="rgba(225,220,201,0.4)" tick={{ fill: '#E1DCC9' }} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: "#111111", 
-                      border: "1px solid rgba(225,220,201,0.1)", 
-                      borderRadius: "12px",
-                      color: "#E1DCC9",
-                      fontFamily: "Inter"
-                    }} 
-                  />
-                  <Bar dataKey="Tuition" fill="#D4A017" name="Tuition Cost" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Salary" fill="#4CAF50" name="Starting Salary" radius={[4, 4, 0, 0]} />
+                <BarChart data={chartData} margin={{ top: 8, right: 4, left: -26, bottom: 0 }}>
+                  <CartesianGrid stroke="rgba(0,0,0,0.08)" vertical={false} />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} stroke="#8B8B8B" />
+                  <YAxis tickLine={false} axisLine={false} stroke="#8B8B8B" />
+                  <Tooltip contentStyle={{ background: "#FBFAF2", border: "1px solid rgba(0,0,0,0.08)", borderRadius: "12px", color: "#111111", fontFamily: "Inter" }} />
+                  <Bar dataKey="Tuition" fill="#D4A017" name="Tuition Cost" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Salary" fill="#4CAF50" name="Starting Salary" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex items-center justify-center gap-4 mt-2 text-[10px] font-sans font-semibold text-[rgba(225,220,201,0.6)]">
-              <div className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-[#D4A017]" />
-                <span>Tuition Fees</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-[#4CAF50]" />
-                <span>Starting Salary</span>
-              </div>
-            </div>
           </div>
-        </div>
-
-        {/* Row 4: Application Health Score */}
-        <div className="col-span-12 lg:col-span-6 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-heading font-extrabold text-[#F5F2EA]">
-                Application Health Score
-              </h2>
-              <Badge tone={applicationHealth.score >= 75 ? "emerald" : applicationHealth.score >= 45 ? "blue" : "rose"}>
-                {applicationHealth.label}
-              </Badge>
-            </div>
-            
-            <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mb-4">
-              An aggregate health check of documents, essays, and references for all tracked applications.
-            </p>
-
-            <div className="flex items-center gap-6 py-2">
-              <div className="relative size-20 shrink-0">
-                <svg className="size-full -rotate-90">
-                  <circle cx="40" cy="40" r="34" className="stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="5.5" />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="34"
-                    className={cn(
-                      "fill-none transition-all duration-500",
-                      applicationHealth.score >= 75 ? "stroke-[#4CAF50]" : applicationHealth.score >= 45 ? "stroke-[#6C8EFF]" : "stroke-[#C94A4A]"
-                    )}
-                    strokeWidth="5.5"
-                    strokeDasharray={2 * Math.PI * 34}
-                    strokeDashoffset={2 * Math.PI * 34 - (applicationHealth.score / 100) * (2 * Math.PI * 34)}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-number font-extrabold text-[#FFFFFF]">
-                  {applicationHealth.score}%
-                </span>
-              </div>
-
-              <div className="space-y-1.5 text-xs font-sans w-full">
-                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
-                  <span className="text-[rgba(225,220,201,0.6)]">Shortlisted targets</span>
-                  <span className="font-semibold text-[#FFFFFF]">{applications.length} Colleges</span>
-                </div>
-                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
-                  <span className="text-[rgba(225,220,201,0.6)]">Document completeness</span>
-                  <span className="font-semibold text-[#FFFFFF]">
-                    {applications.filter(a => a.completeness && a.completeness >= 80).length} / {applications.length} ready
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
-                  <span className="text-[rgba(225,220,201,0.6)]">Next milestone deadline</span>
-                  <span className="font-semibold text-[#FFFFFF]">
-                    {applications.length > 0 ? "Tracked" : "No active deadlines"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 4: College Readiness Score */}
-        <div className="col-span-12 lg:col-span-6 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-heading font-extrabold text-[#F5F2EA]">
-                College Readiness Score
-              </h2>
-              <Badge tone={readinessScore.score >= 75 ? "emerald" : readinessScore.score >= 50 ? "blue" : "slate"}>
-                {readinessScore.label}
-              </Badge>
-            </div>
-
-            <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mb-4">
-              Calculates structural preparedness based on your academic markers, targets, and activity completeness.
-            </p>
-
-            <div className="flex items-center gap-6 py-2">
-              <div className="relative size-20 shrink-0">
-                <svg className="size-full -rotate-90">
-                  <circle cx="40" cy="40" r="34" className="stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="5.5" />
-                  <circle
-                    cx="40"
-                    cy="40"
-                    r="34"
-                    className={cn(
-                      "fill-none transition-all duration-500",
-                      readinessScore.score >= 75 ? "stroke-[#4CAF50]" : readinessScore.score >= 50 ? "stroke-[#6C8EFF]" : "stroke-[#D4A017]"
-                    )}
-                    strokeWidth="5.5"
-                    strokeDasharray={2 * Math.PI * 34}
-                    strokeDashoffset={2 * Math.PI * 34 - (readinessScore.score / 100) * (2 * Math.PI * 34)}
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-number font-extrabold text-[#FFFFFF]">
-                  {readinessScore.score}
-                </span>
-              </div>
-
-              <div className="space-y-1.5 text-xs font-sans w-full">
-                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
-                  <span className="text-[rgba(225,220,201,0.6)]">Academic details linked</span>
-                  <span className="font-semibold text-[#FFFFFF]">{(profile?.gpa && profile?.grade) ? "Complete" : "Incomplete"}</span>
-                </div>
-                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
-                  <span className="text-[rgba(225,220,201,0.6)]">Standardized tests recorded</span>
-                  <span className="font-semibold text-[#FFFFFF]">{profile?.satAct ? "Complete" : "Incomplete"}</span>
-                </div>
-                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
-                  <span className="text-[rgba(225,220,201,0.6)]">Extracurricular mapping</span>
-                  <span className="font-semibold text-[#FFFFFF]">{(profile?.activities && profile.activities.length > 0) ? "Active" : "None"}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+        </aside>
+      </section>
     </div>
   );
 }
