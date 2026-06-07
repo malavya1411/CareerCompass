@@ -50,10 +50,10 @@ export function NavItem({ to, label, icon: Icon, badge }: { to: string; label: s
       to={to}
       className={({ isActive }) =>
         cn(
-          "flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+          "flex items-center justify-between py-2.5 text-sm font-medium transition-all duration-200",
           isActive
-            ? "bg-[#3B5BDB] text-white font-semibold shadow-md shadow-[#3B5BDB]/10"
-            : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
+            ? "bg-brand/10 text-brand dark:text-[#708BF4] font-semibold border-l-4 border-brand rounded-r-lg pl-2"
+            : "text-slate-500 dark:text-slate-450 hover:bg-slate-55 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200 border-l-4 border-transparent pl-3"
         )
       }
     >
@@ -147,19 +147,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <div className="relative size-11 shrink-0">
               <svg className="size-full -rotate-90">
-                <circle cx="22" cy="22" r={radius} className="stroke-slate-250 dark:stroke-slate-800 fill-none" strokeWidth="2.5" />
+                <circle cx="22" cy="22" r={radius} className="stroke-slate-200 dark:stroke-slate-800/80 fill-none" strokeWidth="2.5" />
                 <circle
                   cx="22"
                   cy="22"
                   r={radius}
-                  className="stroke-[#3B5BDB] fill-none transition-all duration-500"
+                  className="stroke-[#3B5BDB] dark:stroke-[#708BF4] fill-none transition-all duration-500"
                   strokeWidth="2.5"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-number font-extrabold text-[#3B5BDB] dark:text-blue-400">
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-number font-extrabold text-[#3B5BDB] dark:text-[#708BF4]">
                 {completionPct}%
               </span>
             </div>

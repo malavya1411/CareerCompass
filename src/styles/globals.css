@@ -14,16 +14,22 @@
   --text-secondary: #64748b;
   --scroll-track: transparent;
   --scroll-thumb: #cbd5e1;
+  --brand-color: #3b5bdb;
+  --brand-hover: #2f4fc7;
+  --success-color: #16a34a;
 }
 
 .dark {
-  --bg-color: #0b1220;
-  --card-color: #1e293b;
-  --border-color: #334155;
+  --bg-color: #080c14;          /* Deeper midnight navy */
+  --card-color: #0f1524;        /* Richer, darker surface cards */
+  --border-color: #1d283d;      /* High-contrast border definitions */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --scroll-track: #0b1220;
-  --scroll-thumb: #334155;
+  --scroll-track: #080c14;
+  --scroll-thumb: #1d283d;
+  --brand-color: #5c7cfa;       /* Brighter read-friendly indigo for dark mode */
+  --brand-hover: #708bf4;
+  --success-color: #22c55e;     /* Clear readable success green */
 }
 
 body {
