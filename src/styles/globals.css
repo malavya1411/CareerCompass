@@ -9,10 +9,13 @@
 :root {
   --bg-color: #000000;
   --card-color: #111111;
+  --elevated-color: #1F150C;
   --border-color: rgba(225, 220, 201, 0.08);
-  --text-primary: #E1DCC9;
-  --text-secondary: rgba(225, 220, 201, 0.65);
-  --title-color: #F5F2EA;
+  --text-primary: #F5F2EA;
+  --text-secondary: rgba(225, 220, 201, 0.72);
+  --text-muted: rgba(225, 220, 201, 0.55);
+  --accent-brown: #412D15;
+  --accent-brown-hover: #5A3B19;
   --scroll-track: #000000;
   --scroll-thumb: #412D15;          /* Walnut */
   --brand-color: #E1DCC9;           /* Warm Ivory */
@@ -26,10 +29,13 @@
 .dark {
   --bg-color: #000000;
   --card-color: #111111;
+  --elevated-color: #1F150C;
   --border-color: rgba(225, 220, 201, 0.08);
-  --text-primary: #E1DCC9;
-  --text-secondary: rgba(225, 220, 201, 0.65);
-  --title-color: #F5F2EA;
+  --text-primary: #F5F2EA;
+  --text-secondary: rgba(225, 220, 201, 0.72);
+  --text-muted: rgba(225, 220, 201, 0.55);
+  --accent-brown: #412D15;
+  --accent-brown-hover: #5A3B19;
   --scroll-track: #000000;
   --scroll-thumb: #412D15;
   --brand-color: #E1DCC9;

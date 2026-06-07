@@ -14,6 +14,13 @@ export default {
           DEFAULT: "#3B5BDB",
           hover: "#2F4FC7",
         },
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
+        muted: "var(--text-muted)",
+        accentBrown: {
+          DEFAULT: "var(--accent-brown)",
+          hover: "var(--accent-brown-hover)",
+        },
       },
       boxShadow: {
         soft: "0 12px 30px rgba(15, 23, 42, 0.08)",
