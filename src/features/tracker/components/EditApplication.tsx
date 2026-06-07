@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, CheckSquare, Square } from "lucide-react";
 import { useAuth } from "../../auth";
 import { Card, Button, Field, Select, Input, Textarea, statuses } from "../../../shared";
@@ -35,8 +35,24 @@ export function EditApplication({
   const [recLetterUploaded, setRecLetterUploaded] = useState(
     app.requiredDocuments?.find(d => d.name === "Recommendation Letter")?.status === "Uploaded" || false
   );
-
   const [loading, setLoading] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === overlayRef.current) {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   const handleStatusChange = (newStatus: AppStatus) => {
     setStatus(newStatus);
@@ -97,7 +113,7 @@ export function EditApplication({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
+    <div ref={overlayRef} onClick={handleOverlayClick} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
       <Card className="w-full max-w-lg p-6 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl modal-content text-left">
         <div className="mb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-3">
           <h2 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">{college?.name || "Edit Application"}</h2>

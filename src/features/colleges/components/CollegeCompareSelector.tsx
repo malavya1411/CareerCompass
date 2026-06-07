@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { useCatalog, Card, Input } from "../../../shared";
 import { useCompare } from "../state/CompareContext";
@@ -14,15 +15,44 @@ export function CollegeCompareSelector() {
     (c) => !compareIds.includes(c.id) && c.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
+    function handleScroll() {
+      setIsOpen(false);
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (isOpen) {
+      window.addEventListener("scroll", handleScroll, true);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
 
   if (compareIds.length >= 4) return null;
 

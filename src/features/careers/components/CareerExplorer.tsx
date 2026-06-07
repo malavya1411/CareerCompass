@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, X, BriefcaseBusiness, GraduationCap, CheckCircle2, TrendingUp } from "lucide-react";
 import { CareerCard } from "./CareerCard";
 import { 
@@ -24,6 +24,20 @@ export function CareerExplorer() {
   const [selectedCareerId, setSelectedCareerId] = useState<string | null>(null);
   const [comparingIds, setComparingIds] = useState<string[]>([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setSelectedCareerId(null);
+      }
+    }
+    if (selectedCareerId) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedCareerId]);
 
   const filtered = careers.filter(
     (career) => 
@@ -159,11 +173,10 @@ export function CareerExplorer() {
         />
       )}
 
-      {/* Sliding Drawer Container */}
       <div 
         className={cn(
           "fixed top-0 right-0 h-screen w-full sm:w-[500px] bg-white dark:bg-[#111827] border-l border-slate-200 dark:border-slate-800 z-50 shadow-2xl flex flex-col transition-transform duration-300 transform",
-          selectedCareer ? "translate-x-0" : "translate-x-full"
+          selectedCareer ? "translate-x-0" : "translate-x-full invisible pointer-events-none"
         )}
       >
         {selectedCareer && (
