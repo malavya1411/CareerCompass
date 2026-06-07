@@ -43,19 +43,19 @@ export function CareerCard({
   };
 
   const cardColors = {
-    STEM: "border-l-blue-500",
-    Business: "border-l-violet-500",
-    Healthcare: "border-l-emerald-500",
-    Arts: "border-l-pink-500",
-    Education: "border-l-amber-500",
-    Law: "border-l-slate-400"
+    STEM: "border-l-[#6C8EFF]",       // Info
+    Business: "border-l-[#D4A017]",   // Warning
+    Healthcare: "border-l-[#4CAF50]", // Success
+    Arts: "border-l-[#C94A4A]",       // Danger/Rose
+    Education: "border-l-[#D4A017]",  // Amber
+    Law: "border-l-[#E1DCC9]"         // Neutral Warm Ivory
   }[career.category];
 
   return (
     <Card 
       onClick={onSelect}
       className={cn(
-        "flex flex-col justify-between h-full p-5 border-l-4 card-hover bg-white dark:bg-[#1E293B] border-slate-200 dark:border-[#334155] cursor-pointer text-left relative",
+        "flex flex-col justify-between h-full p-5 border-l-4 cursor-pointer text-left relative transition-all duration-200 hover:border-r hover:border-t hover:border-b hover:border-[rgba(225,220,201,0.12)]",
         cardColors
       )}
     >
@@ -63,17 +63,17 @@ export function CareerCard({
         {/* Top bar */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className={cn("grid size-8 place-items-center rounded-lg text-white",
-              career.category === "STEM" && "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-              career.category === "Business" && "bg-violet-500/10 text-violet-600 dark:text-violet-400",
-              career.category === "Healthcare" && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-              career.category === "Arts" && "bg-pink-500/10 text-pink-600 dark:text-pink-400",
-              career.category === "Education" && "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-              career.category === "Law" && "bg-slate-500/10 text-slate-600 dark:text-slate-400"
+            <span className={cn("grid size-8 place-items-center rounded-lg border",
+              career.category === "STEM" && "bg-[rgba(108,142,255,0.08)] border-[rgba(108,142,255,0.15)] text-[#6C8EFF]",
+              career.category === "Business" && "bg-[rgba(212,160,23,0.08)] border-[rgba(212,160,23,0.15)] text-[#D4A017]",
+              career.category === "Healthcare" && "bg-[rgba(76,175,80,0.08)] border-[rgba(76,175,80,0.15)] text-[#4CAF50]",
+              career.category === "Arts" && "bg-[rgba(201,74,74,0.08)] border-[rgba(201,74,74,0.15)] text-[#C94A4A]",
+              career.category === "Education" && "bg-[rgba(212,160,23,0.08)] border-[rgba(212,160,23,0.15)] text-[#D4A017]",
+              career.category === "Law" && "bg-[rgba(225,220,201,0.08)] border-[rgba(225,220,201,0.15)] text-[#E1DCC9]"
             )}>
               <BriefcaseBusiness size={16} />
             </span>
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-[rgba(225,220,201,0.5)]">
               {career.category}
             </span>
           </div>
@@ -81,7 +81,7 @@ export function CareerCard({
           <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
-              className={cn("size-8 p-0 rounded-full", isComparing ? "bg-blue-50 text-brand" : "text-slate-400 hover:text-slate-600")}
+              className={cn("size-8 p-0 rounded-full", isComparing ? "bg-[#1F150C] text-[#FFFFFF]" : "text-[rgba(225,220,201,0.6)] hover:bg-[#1A1A1A]")}
               onClick={onCompareToggle}
               title="Compare Career"
             >
@@ -89,11 +89,11 @@ export function CareerCard({
             </Button>
             <Button
               variant="ghost"
-              className="size-8 p-0 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/20"
+              className="size-8 p-0 rounded-full hover:bg-[rgba(201,74,74,0.08)]"
               onClick={handleSaveToggle}
               title="Save Career Category"
             >
-              <Heart size={15} className={cn("transition-all", saved ? "fill-rose-500 text-rose-500 scale-110" : "text-slate-400")} />
+              <Heart size={15} className={cn("transition-all", saved ? "fill-[#C94A4A] text-[#C94A4A] scale-110" : "text-[rgba(225,220,201,0.6)]")} />
             </Button>
           </div>
         </div>
@@ -101,52 +101,52 @@ export function CareerCard({
         {/* Title and stats */}
         <div>
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-base font-heading font-extrabold text-slate-800 dark:text-white leading-snug">
+            <h3 className="text-base font-heading font-extrabold text-[#F5F2EA] leading-snug">
               {career.title}
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-number font-bold bg-blue-50 dark:bg-blue-950 text-brand dark:text-blue-400 border border-blue-100 dark:border-blue-900 shrink-0">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-[rgba(76,175,80,0.12)] text-[#4CAF50] border border-[rgba(76,175,80,0.15)] shrink-0 animate-pulse">
               {matchScore}% Fit
             </span>
           </div>
           
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
             <GrowthBadge value={career.growthOutlook} />
-            <Badge className="font-number font-semibold text-[10px]">{career.salaryRange}</Badge>
+            <Badge tone="slate" className="font-sans font-bold text-[9px]">{career.salaryRange}</Badge>
           </div>
         </div>
 
-        <p className="line-clamp-2 text-xs text-slate-500 dark:text-[#94A3B8] leading-relaxed">
+        <p className="line-clamp-2 text-xs text-[rgba(225,220,201,0.65)] leading-relaxed">
           {career.description}
         </p>
 
         {/* Why it matches */}
-        <div className="bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/80 text-[11px]">
-          <span className="font-sans font-bold text-slate-400 dark:text-slate-500 text-[9px] uppercase tracking-wide">Why Recommended</span>
-          <p className="text-slate-600 dark:text-slate-350 mt-0.5 leading-normal">
+        <div className="bg-[#1F150C]/60 p-2.5 rounded-xl border border-[rgba(225,220,201,0.06)] text-[11px]">
+          <span className="font-sans font-bold text-[rgba(225,220,201,0.4)] text-[9px] uppercase tracking-wide">Why Recommended</span>
+          <p className="text-[rgba(225,220,201,0.85)] mt-0.5 leading-normal">
             {career.matchExplanation || "Matches your academic preferences and industry interest vectors."}
           </p>
         </div>
 
-        <Separator className="bg-slate-100 dark:bg-slate-850" />
+        <Separator className="bg-[rgba(225,220,201,0.08)]" />
 
         {/* Details snippet */}
         <div className="space-y-1">
-          <p className="text-[9px] font-sans font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Leading Majors</p>
+          <p className="text-[9px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest">Leading Majors</p>
           <div className="flex flex-wrap gap-1">
             {career.relatedMajors.slice(0, 2).map((major) => (
-              <Badge key={major} tone="slate" className="text-[9px] py-0 px-1.5 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 font-semibold">
+              <Badge key={major} tone="slate" className="text-[9px] font-bold py-0.5 px-2">
                 {major}
               </Badge>
             ))}
             {career.relatedMajors.length > 2 && (
-              <span className="text-[9px] text-slate-400 font-bold ml-1">+{career.relatedMajors.length - 2} more</span>
+              <span className="text-[9px] text-[rgba(225,220,201,0.45)] font-bold ml-1">+{career.relatedMajors.length - 2} more</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-3 mt-4 border-t border-slate-100 dark:border-slate-800">
-        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-sans font-medium">
+      <div className="flex items-center justify-between pt-3 mt-4 border-t border-[rgba(225,220,201,0.06)]">
+        <span className="text-[10px] text-[rgba(225,220,201,0.55)] font-sans font-semibold">
           Demand: {career.projectedDemand ? career.projectedDemand.split(" ").slice(0, 2).join(" ") : "Growing"}
         </span>
         <button 
@@ -154,9 +154,9 @@ export function CareerCard({
             e.stopPropagation();
             if (onSelect) onSelect();
           }}
-          className="text-xs font-sans font-bold text-brand dark:text-blue-400 hover:text-brand-hover flex items-center gap-1"
+          className="text-xs font-sans font-bold text-[#E1DCC9] hover:text-[#FFFFFF] flex items-center gap-1 transition-colors duration-150"
         >
-          View Path <ArrowRight size={13} />
+          View Career Path <ArrowRight size={13} />
         </button>
       </div>
     </Card>

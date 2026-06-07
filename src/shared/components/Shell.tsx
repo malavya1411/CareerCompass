@@ -52,17 +52,17 @@ export function NavItem({ to, label, icon: Icon, badge }: { to: string; label: s
         cn(
           "flex items-center justify-between py-2.5 text-sm font-medium transition-all duration-200",
           isActive
-            ? "bg-brand/10 text-brand dark:text-[#708BF4] font-semibold border-l-4 border-brand rounded-r-lg pl-2"
-            : "text-slate-500 dark:text-slate-450 hover:bg-slate-55 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-200 border-l-4 border-transparent pl-3"
+            ? "bg-[#1F150C] text-[#FFFFFF] font-semibold border-l-4 border-[#E1DCC9] rounded-r-lg pl-2"
+            : "text-[rgba(225,220,201,0.65)] hover:bg-[#1A1A1A] hover:text-[#FFFFFF] border-l-4 border-transparent pl-3"
         )
       }
     >
       <div className="flex items-center gap-3">
-        <Icon size={18} />
+        <Icon size={18} className="text-inherit" />
         <span className="font-sans">{label}</span>
       </div>
       {badge !== undefined && (
-        <span className="grid size-5 place-items-center rounded-full bg-red-500 text-[10px] font-extrabold text-white font-number">
+        <span className="grid size-5 place-items-center rounded-full bg-[#C94A4A] text-[10px] font-extrabold text-white font-number animate-pulse">
           {badge}
         </span>
       )}
@@ -77,16 +77,16 @@ export function MobileNavItem({ to, label, icon: Icon, badge }: { to: string; la
       className={({ isActive }) =>
         cn(
           "grid place-items-center text-[10px] font-medium transition-all duration-150 py-1.5 relative",
-          isActive ? "text-[#3B5BDB] font-bold" : "text-slate-500 hover:text-slate-800"
+          isActive ? "text-[#FFFFFF] font-bold bg-[#1F150C]/40" : "text-[rgba(225,220,201,0.65)] hover:text-[#FFFFFF]"
         )
       }
     >
       {({ isActive }) => (
         <>
           <div className="relative">
-            <Icon size={20} className={cn("transition-transform duration-200", isActive && "scale-110")} />
+            <Icon size={20} className={cn("transition-transform duration-200", isActive ? "scale-110 text-[#E1DCC9]" : "text-[rgba(225,220,201,0.65)]")} />
             {badge !== undefined && (
-              <span className="absolute -top-1 -right-2 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[8px] font-extrabold text-white">
+              <span className="absolute -top-1 -right-2 grid h-4 min-w-4 place-items-center rounded-full bg-[#C94A4A] px-1 text-[8px] font-extrabold text-white">
                 {badge}
               </span>
             )}
@@ -133,49 +133,49 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const strokeDashoffset = circumference - (completionPct / 100) * circumference;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1220] pb-20 md:pb-0 transition-colors duration-200">
-      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] p-5 md:block text-slate-700 dark:text-slate-300">
-        <Link to="/" className="flex items-center gap-2.5 text-xl font-heading font-extrabold text-[#0F172A] dark:text-[#F8FAFC] tracking-tight">
-          <span className="grid size-9 place-items-center rounded-lg bg-[#3B5BDB] text-white shadow-md shadow-[#3B5BDB]/20">
+    <div className="min-h-screen bg-transparent pb-20 md:pb-0 transition-colors duration-200">
+      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-[rgba(225,220,201,0.08)] bg-[#0A0A0A] p-5 md:block text-[#E1DCC9]">
+        <Link to="/" className="flex items-center gap-2.5 text-xl font-heading font-extrabold text-[#F5F2EA] tracking-tight">
+          <span className="grid size-9 place-items-center rounded-lg bg-[#412D15] text-[#E1DCC9] border border-[rgba(225,220,201,0.15)] shadow-md shadow-black">
             <Compass size={20} />
           </span>
           CareerCompass
         </Link>
 
         {/* Academic Progress Widget */}
-        <div className="mt-6 border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-3">
+        <div className="mt-6 border border-[rgba(225,220,201,0.08)] bg-[#1F150C] rounded-xl p-3">
           <div className="flex items-center gap-3">
             <div className="relative size-11 shrink-0">
               <svg className="size-full -rotate-90">
-                <circle cx="22" cy="22" r={radius} className="stroke-slate-200 dark:stroke-slate-800/80 fill-none" strokeWidth="2.5" />
+                <circle cx="22" cy="22" r={radius} className="stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="2.5" />
                 <circle
                   cx="22"
                   cy="22"
                   r={radius}
-                  className="stroke-[#3B5BDB] dark:stroke-[#708BF4] fill-none transition-all duration-500"
+                  className="stroke-[#E1DCC9] fill-none transition-all duration-500"
                   strokeWidth="2.5"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-number font-extrabold text-[#3B5BDB] dark:text-[#708BF4]">
+              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-number font-extrabold text-[#E1DCC9]">
                 {completionPct}%
               </span>
             </div>
             <div className="min-w-0">
-              <p className="font-heading font-extrabold text-slate-900 dark:text-white text-xs truncate leading-none">{profile?.displayName || "Student"}</p>
-              <p className="text-[10px] text-slate-400 font-sans font-medium mt-1 leading-none">Grade {profile?.grade || "11"}</p>
+              <p className="font-heading font-extrabold text-[#F5F2EA] text-xs truncate leading-none">{profile?.displayName || "Student"}</p>
+              <p className="text-[10px] text-[rgba(225,220,201,0.6)] font-sans font-medium mt-1 leading-none">Grade {profile?.grade || "11"}</p>
             </div>
           </div>
-          <div className="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800/50 grid grid-cols-2 gap-2 text-[10px] font-sans font-bold tracking-wider uppercase text-slate-400">
+          <div className="mt-2.5 pt-2 border-t border-[rgba(225,220,201,0.08)] grid grid-cols-2 gap-2 text-[10px] font-sans font-bold tracking-wider uppercase text-[rgba(225,220,201,0.6)]">
             <div className="min-w-0">
-              <span className="block text-slate-400 dark:text-slate-500 text-[8px] font-sans font-bold tracking-widest uppercase">Target</span>
-              <span className="text-slate-800 dark:text-white truncate block mt-0.5">{profile?.intendedMajor ? profile.intendedMajor.split(" ").slice(0,2).join(" ") : "Explore"}</span>
+              <span className="block text-[rgba(225,220,201,0.4)] text-[8px] font-sans font-bold tracking-widest uppercase">Target</span>
+              <span className="text-[#E1DCC9] truncate block mt-0.5">{profile?.intendedMajor ? profile.intendedMajor.split(" ").slice(0,2).join(" ") : "Explore"}</span>
             </div>
-            <div className="min-w-0 border-l border-slate-200/60 dark:border-slate-800/50 pl-2">
-              <span className="block text-slate-400 dark:text-slate-500 text-[8px] font-sans font-bold tracking-widest uppercase">Deadline</span>
-              <span className={cn("truncate block mt-0.5", daysToNext !== null && daysToNext <= 7 ? "text-red-500 font-extrabold urgent-pulse" : "text-slate-800 dark:text-white")}>
+            <div className="min-w-0 border-l border-[rgba(225,220,201,0.08)] pl-2">
+              <span className="block text-[rgba(225,220,201,0.4)] text-[8px] font-sans font-bold tracking-widest uppercase">Deadline</span>
+              <span className={cn("truncate block mt-0.5", daysToNext !== null && daysToNext <= 7 ? "text-[#C94A4A] font-extrabold urgent-pulse" : "text-[#E1DCC9]")}>
                 {daysToNext !== null ? `${daysToNext} days` : "None"}
               </span>
             </div>
@@ -186,7 +186,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="mt-6 space-y-4 h-[calc(100vh-270px)] overflow-y-auto pr-1">
           {navigationGroups.map((group) => (
             <div key={group.title} className="space-y-1.5">
-              <h4 className="text-[10px] font-bold font-sans text-slate-400 dark:text-slate-500 uppercase tracking-widest pl-3">
+              <h4 className="text-[10px] font-bold font-sans text-[rgba(225,220,201,0.4)] uppercase tracking-widest pl-3">
                 {group.title}
               </h4>
               <nav className="grid gap-0.5">
@@ -204,28 +204,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
         {/* Sidebar Bottom Actions */}
         <div className="absolute bottom-5 left-5 right-5 space-y-2.5">
-          <div className="flex items-center justify-between gap-2 border-t border-slate-200 dark:border-slate-800/80 pt-3">
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200"
-              title="Toggle theme"
-            >
-              {theme === "light" ? (
-                <>
-                  <Moon size={15} />
-                  <span>Dark Mode</span>
-                </>
-              ) : (
-                <>
-                  <Sun size={15} />
-                  <span>Light Mode</span>
-                </>
-              )}
-            </button>
-            {isDemo && <Badge tone="blue" className="text-[9px] py-0 px-1 border-blue-400/30 bg-blue-500/10 text-[#3B5BDB] dark:text-blue-400 font-extrabold uppercase tracking-wide">Demo</Badge>}
+          <div className="flex items-center justify-between gap-2 border-t border-[rgba(225,220,201,0.08)] pt-3">
+            {isDemo && <Badge tone="blue" className="text-[9px] py-0 px-1 border-[rgba(108,142,255,0.2)] bg-[rgba(108,142,255,0.12)] text-[#6C8EFF] font-extrabold uppercase tracking-wide">Demo</Badge>}
           </div>
 
-          <Button variant="ghost" className="w-full justify-start text-slate-400 hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/10 h-9 text-xs" onClick={logout}>
+          <Button variant="ghost" className="w-full justify-start text-[rgba(225,220,201,0.6)] hover:text-[#C94A4A] hover:bg-[rgba(201,74,74,0.05)] border border-transparent hover:border-[rgba(201,74,74,0.1)] h-9 text-xs" onClick={logout}>
             <LogOut size={16} /> {isDemo ? "Exit Demo" : "Sign out"}
           </Button>
         </div>
@@ -236,7 +219,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <FloatingCompareBar />
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-20 grid h-16 grid-cols-6 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-20 grid h-16 grid-cols-6 border-t border-[rgba(225,220,201,0.08)] bg-[#0A0A0A] md:hidden">
         {allNavItems.map((item) => (
           <MobileNavItem 
             key={item.to} 

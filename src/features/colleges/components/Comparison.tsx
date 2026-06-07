@@ -59,25 +59,25 @@ export function Comparison() {
         <div className="mx-auto max-w-3xl py-6 space-y-8 text-left">
           
           {/* Comparison Benefits Info Card */}
-          <Card className="p-6 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl flex flex-col md:flex-row items-center gap-6">
-            <span className="grid size-16 place-items-center rounded-2xl bg-blue-50 dark:bg-blue-950 text-brand dark:text-blue-400 shrink-0 shadow-sm">
+          <Card className="p-6 bg-[#111111] border border-[rgba(225,220,201,0.06)] shadow-[0px_12px_32px_rgba(0,0,0,0.35)] rounded-2xl flex flex-col md:flex-row items-center gap-6">
+            <span className="grid size-16 place-items-center rounded-2xl bg-[#1F150C] border border-[rgba(225,220,201,0.1)] text-[#E1DCC9] shrink-0 shadow-sm">
               <BarChart3 size={32} />
             </span>
             <div className="space-y-2">
-              <h3 className="text-lg font-heading font-extrabold text-slate-800 dark:text-white">
+              <h3 className="text-lg font-heading font-extrabold text-[#F5F2EA]">
                 Side-by-Side College Analytics
               </h3>
-              <p className="text-xs text-slate-500 dark:text-[#94A3B8] font-sans leading-relaxed">
+              <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans leading-relaxed">
                 Compare up to 4 saved colleges at once. Evaluate critical benchmarks like average placement rates, CS rankings, tuition fees, starting salaries, student-faculty ratios, and fit match percentages.
               </p>
             </div>
           </Card>
 
           {/* Selector widget */}
-          <Card className="p-6 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl text-center space-y-4 relative z-10">
+          <Card className="p-6 bg-[#111111] border border-[rgba(225,220,201,0.06)] shadow-[0px_12px_32px_rgba(0,0,0,0.35)] rounded-2xl text-center space-y-4 relative z-10">
             <div>
-              <h4 className="font-heading font-extrabold text-sm text-slate-800 dark:text-white">Select colleges to compare</h4>
-              <p className="text-xs text-slate-400 dark:text-[#94A3B8] font-sans mt-0.5">Choose colleges from your saved list or browse the catalog.</p>
+              <h4 className="font-heading font-extrabold text-sm text-[#F5F2EA]">Select colleges to compare</h4>
+              <p className="text-xs text-[rgba(225,220,201,0.45)] font-sans mt-0.5">Choose colleges from your saved list or browse the catalog.</p>
             </div>
             
             <div className="max-w-md mx-auto">
@@ -85,8 +85,8 @@ export function Comparison() {
             </div>
 
             <div className="flex items-center justify-center gap-2 mt-2 font-sans">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Or</span>
-              <Link to="/colleges" className="text-xs text-brand dark:text-blue-400 hover:text-brand-hover font-bold flex items-center gap-0.5">
+              <span className="text-[10px] text-[rgba(225,220,201,0.4)] font-bold uppercase tracking-wider">Or</span>
+              <Link to="/colleges" className="text-xs text-[#E1DCC9] hover:text-[#FFFFFF] font-bold flex items-center gap-0.5 transition-colors">
                 Browse college explorer <ArrowRight size={13} />
               </Link>
             </div>
@@ -94,17 +94,17 @@ export function Comparison() {
 
           {/* Benefits bullets list */}
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-850 space-y-1">
-              <span className="text-[10px] font-sans font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Cost & Affordability</span>
-              <p className="text-xs font-sans text-slate-600 dark:text-[#94A3B8] leading-relaxed">Filter and view tuition fee differences and available aid guidelines.</p>
+            <div className="p-4 bg-[#1F150C]/60 rounded-xl border border-[rgba(225,220,201,0.06)] space-y-1">
+              <span className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block">Cost & Affordability</span>
+              <p className="text-xs font-sans text-[rgba(225,220,201,0.65)] leading-relaxed">Filter and view tuition fee differences and available aid guidelines.</p>
             </div>
-            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-850 space-y-1">
-              <span className="text-[10px] font-sans font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Academic Prestige</span>
-              <p className="text-xs font-sans text-slate-600 dark:text-[#94A3B8] leading-relaxed">Check national rankings, median admitted GPA requirements, and class ratios.</p>
+            <div className="p-4 bg-[#1F150C]/60 rounded-xl border border-[rgba(225,220,201,0.06)] space-y-1">
+              <span className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block">Academic Prestige</span>
+              <p className="text-xs font-sans text-[rgba(225,220,201,0.65)] leading-relaxed">Check national rankings, median admitted GPA requirements, and class ratios.</p>
             </div>
-            <div className="p-4 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-850 space-y-1">
-              <span className="text-[10px] font-sans font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Career Outcomes</span>
-              <p className="text-xs font-sans text-slate-600 dark:text-[#94A3B8] leading-relaxed">Analyze placement statistics, average starting salaries, and top programs.</p>
+            <div className="p-4 bg-[#1F150C]/60 rounded-xl border border-[rgba(225,220,201,0.06)] space-y-1">
+              <span className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block">Career Outcomes</span>
+              <p className="text-xs font-sans text-[rgba(225,220,201,0.65)] leading-relaxed">Analyze placement statistics, average starting salaries, and top programs.</p>
             </div>
           </div>
 
@@ -115,7 +115,7 @@ export function Comparison() {
 
   // Render the matrix rows
   const matrixRows: { label: string; getVal: (c: College) => React.ReactNode; isNumber?: boolean }[] = [
-    { label: "Fit Score", getVal: (c) => <span className="font-extrabold text-brand dark:text-blue-400">{calculateFitScore(profile, c)}% Match</span>, isNumber: true },
+    { label: "Fit Score", getVal: (c) => <span className="font-extrabold text-[#4CAF50]">{calculateFitScore(profile, c)}% Match</span>, isNumber: true },
     { label: "Acceptance Rate", getVal: (c) => `${c.acceptanceRate}%`, isNumber: true },
     { label: "Tuition / yr", getVal: (c) => formatMoney(c.tuition), isNumber: true },
     { label: "CS Ranking", getVal: (c) => `#${c.csRanking || "N/A"}`, isNumber: true },
@@ -130,8 +130,8 @@ export function Comparison() {
 
   return (
     <Page title="College Comparison" subtitle={`${selected.length} of 4 colleges selected for comparison.`}>
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#1E293B] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-4 relative z-20">
-        <Button variant="outline" className="w-fit border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs" onClick={clearCompare}>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#111111] p-3 rounded-2xl border border-[rgba(225,220,201,0.06)] shadow-sm mb-4 relative z-20">
+        <Button variant="outline" className="w-fit border-[rgba(225,220,201,0.08)] bg-transparent text-[#E1DCC9] hover:bg-[#1A1A1A] hover:text-[#FFFFFF] text-xs transition-colors duration-200" onClick={clearCompare}>
           <X size={15} /> Clear comparison
         </Button>
         <div className="max-w-xs w-full">
@@ -139,11 +139,11 @@ export function Comparison() {
         </div>
       </div>
 
-      <Card className="overflow-x-auto bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800">
+      <Card className="overflow-x-auto bg-[#111111] border border-[rgba(225,220,201,0.06)]">
         <table className="w-full min-w-[800px] text-left text-sm border-collapse font-sans">
           <thead>
-            <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
-              <th className="p-4 w-48 text-xs font-sans font-bold text-slate-400 uppercase tracking-widest">Metric</th>
+            <tr className="border-b border-[rgba(225,220,201,0.08)] bg-[#1A1A1A]/80">
+              <th className="p-4 w-48 text-xs font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest">Metric</th>
               {selected.map((c) => {
                 const isAffordable = highlights.mostAffordableId === c.id;
                 const isMatch = highlights.highestMatchId === c.id;
@@ -151,15 +151,15 @@ export function Comparison() {
                 const isBestValue = highlights.bestValueId === c.id;
 
                 return (
-                  <th className="p-4 relative group align-top border-l border-slate-100 dark:border-slate-800/80" key={c.id}>
+                  <th className="p-4 relative group align-top border-l border-[rgba(225,220,201,0.08)]" key={c.id}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-heading font-extrabold text-sm text-slate-800 dark:text-white truncate max-w-[150px]" title={c.name}>
+                        <span className="font-heading font-extrabold text-sm text-[#F5F2EA] truncate max-w-[150px]" title={c.name}>
                           {c.name}
                         </span>
                         <button
                           type="button"
-                          className="size-5 rounded-full hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 hover:text-[#DC2626] flex items-center justify-center transition-colors shrink-0"
+                          className="size-5 rounded-full hover:bg-[rgba(201,74,74,0.08)] text-[rgba(225,220,201,0.6)] hover:text-[#C94A4A] flex items-center justify-center transition-colors shrink-0"
                           onClick={() => toggleCompare(c.id)}
                           title="Remove from comparison"
                         >
@@ -188,15 +188,15 @@ export function Comparison() {
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-[rgba(225,220,201,0.06)]">
             {matrixRows.map(({ label, getVal, isNumber }) => (
-              <tr className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10 transition-colors" key={label}>
-                <td className="p-4 font-semibold text-slate-700 dark:text-slate-350">{label}</td>
+              <tr className="hover:bg-[#1A1A1A]/40 transition-colors" key={label}>
+                <td className="p-4 font-semibold text-[rgba(225,220,201,0.75)]">{label}</td>
                 {selected.map((college) => (
                   <td 
                     className={cn(
-                      "p-4 align-top text-slate-600 dark:text-slate-450 border-l border-slate-100 dark:border-slate-800/80",
-                      isNumber && "font-number font-medium text-[#0F172A] dark:text-white"
+                      "p-4 align-top text-[rgba(225,220,201,0.65)] border-l border-[rgba(225,220,201,0.06)]",
+                      isNumber && "font-number font-medium text-[#FFFFFF]"
                     )} 
                     key={college.id}
                   >

@@ -9,10 +9,15 @@ import {
   GraduationCap, 
   FileText,
   BarChart3,
-  Award
+  Award,
+  Activity,
+  Heart,
+  Clock,
+  Sparkles
 } from "lucide-react";
 import { useAuth } from "../../auth";
 import { useCatalog } from "../../../shared";
+import { Badge, Progress } from "../../../shared/ui";
 import { 
   ResponsiveContainer, 
   BarChart, 
@@ -22,7 +27,7 @@ import {
   Tooltip, 
   CartesianGrid 
 } from "recharts";
-import { cn } from "../../../shared/utils/utils";
+import { cn, daysUntil } from "../../../shared/utils/utils";
 
 export function Dashboard() {
   const { user, profile, applications } = useAuth();
@@ -63,7 +68,7 @@ export function Dashboard() {
         priority: "High",
         type: "Required",
         to: "/profile",
-        color: "border-l-red-500 bg-red-500/5 text-red-700 dark:text-red-400"
+        color: "border-l-[#C94A4A] bg-[rgba(201,74,74,0.04)] text-[#E1DCC9]"
       });
     }
     const matchingColleges = colleges.filter((c) => profile?.savedColleges?.includes(c.id));
@@ -75,7 +80,7 @@ export function Dashboard() {
         priority: "Medium",
         type: "Explore",
         to: "/colleges",
-        color: "border-l-blue-500 bg-blue-500/5 text-blue-700 dark:text-blue-400"
+        color: "border-l-[#6C8EFF] bg-[rgba(108,142,255,0.04)] text-[#E1DCC9]"
       });
     } else {
       actions.push({
@@ -85,7 +90,7 @@ export function Dashboard() {
         priority: "Medium",
         type: "Research",
         to: `/colleges/${matchingColleges[0].id}`,
-        color: "border-l-amber-500 bg-amber-500/5 text-amber-700 dark:text-amber-400"
+        color: "border-l-[#D4A017] bg-[rgba(212,160,23,0.04)] text-[#E1DCC9]"
       });
     }
 
@@ -103,7 +108,7 @@ export function Dashboard() {
         priority: "High",
         type: "Tracker",
         to: "/tracker",
-        color: diffDays <= 7 ? "border-l-red-500 bg-red-500/5 text-red-700 dark:text-red-400" : "border-l-indigo-500 bg-indigo-500/5 text-indigo-700 dark:text-indigo-400"
+        color: diffDays <= 7 ? "border-l-[#C94A4A] bg-[rgba(201,74,74,0.04)] text-[#E1DCC9]" : "border-l-[#6C8EFF] bg-[rgba(108,142,255,0.04)] text-[#E1DCC9]"
       });
     } else {
       actions.push({
@@ -113,7 +118,7 @@ export function Dashboard() {
         priority: "Medium",
         type: "Action",
         to: "/colleges",
-        color: "border-l-indigo-500 bg-indigo-500/5 text-indigo-700 dark:text-indigo-400"
+        color: "border-l-[#6C8EFF] bg-[rgba(108,142,255,0.04)] text-[#E1DCC9]"
       });
     }
 
@@ -158,256 +163,428 @@ export function Dashboard() {
   const chartData = useMemo(() => {
     const savedCollegesList = colleges.filter((c) => saved.includes(c.id));
     if (savedCollegesList.length === 0) {
-      // Return default subset of colleges if none are saved
       return colleges.slice(0, 4).map((c) => ({
-        name: c.name,
+        name: c.name.split(" ").slice(0, 2).join(" "),
         Tuition: c.tuition,
-        Salary: c.averageSalary || 800000,
+        Salary: c.averageSalary || 80000,
       }));
     }
     return savedCollegesList.map((c) => ({
-      name: c.name,
+      name: c.name.split(" ").slice(0, 2).join(" "),
       Tuition: c.tuition,
-      Salary: c.averageSalary || 800000,
+      Salary: c.averageSalary || 80000,
     }));
   }, [colleges, saved]);
 
+  // Upcoming Deadlines
+  const upcomingDeadlines = useMemo(() => {
+    return [...applications]
+      .filter((app) => app.status !== "Submitted" && app.status !== "Decision" && app.status !== "Accepted")
+      .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+      .map((app) => {
+        const college = colleges.find((c) => c.id === app.collegeId);
+        const daysLeft = daysUntil(new Date(app.deadline));
+        return {
+          id: app.id,
+          collegeName: college?.name || app.collegeId,
+          daysLeft,
+          status: app.status,
+          deadlineDate: new Date(app.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        };
+      })
+      .slice(0, 3);
+  }, [applications, colleges]);
+
+  // Application Health Score calculation
+  const applicationHealth = useMemo(() => {
+    if (!applications || applications.length === 0) return { score: 0, label: "No Applications Added" };
+    const avgCompleteness = Math.round(
+      applications.reduce((acc, app) => acc + (app.completeness || 0), 0) / applications.length
+    );
+    let label = "Needs Attention";
+    if (avgCompleteness >= 75) label = "Excellent";
+    else if (avgCompleteness >= 45) label = "On Track";
+    return { score: avgCompleteness, label };
+  }, [applications]);
+
+  // College Readiness Score calculation
+  const readinessScore = useMemo(() => {
+    let score = 0;
+    if (profile?.gpa) score += 25;
+    if (profile?.satAct) score += 25;
+    const savedCount = saved.length;
+    score += Math.min(25, savedCount * 8);
+    if (profile?.intendedMajor) score += 15;
+    if (profile?.activities && profile.activities.length > 0) score += 10;
+    
+    let label = "Developing";
+    if (score >= 75) label = "Ready / Competitive";
+    else if (score >= 50) label = "On Track";
+    return { score, label };
+  }, [profile, saved]);
+
   return (
-    <div className="space-y-6">
-      {/* Hero Section */}
-      <div className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-        <h1 className="text-3xl font-heading font-extrabold text-slate-900 dark:text-[#F8FAFC]">
-          Welcome back, {profile?.displayName || "Alex"}
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-[#94A3B8] font-sans font-medium mt-1">
-          You're <span className="font-number font-bold text-brand dark:text-blue-400">{completionPercentage}%</span> complete with your college planning journey.
-        </p>
-
-        {/* Milestone Indicator Bar */}
-        <div className="mt-6">
-          <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-            <div 
-              className="h-full bg-brand dark:bg-blue-500 transition-all duration-750 ease-out" 
-              style={{ width: `${completionPercentage}%` }} 
-            />
+    <div className="space-y-6 max-w-7xl mx-auto text-[#E1DCC9]">
+      <div className="grid grid-cols-12 gap-6">
+        
+        {/* Row 1: Journey Progress (Espresso background with walnut gradient) */}
+        <div className="col-span-12 lg:col-span-8 bg-gradient-to-br from-[#1F150C] to-[#2B1E10] border border-[rgba(225,220,201,0.08)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+          <div>
+            <h1 className="text-3xl font-heading font-extrabold text-[#F5F2EA]">
+              Welcome back, {profile?.displayName || "Student"}
+            </h1>
+            <p className="text-sm text-[rgba(225,220,201,0.7)] font-sans mt-1">
+              You're <span className="font-number font-bold text-[#FFFFFF]">{completionPercentage}%</span> complete with your college planning journey.
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
-            {milestones.map((m) => (
+
+          <div className="mt-6">
+            <div className="h-2.5 w-full rounded-full bg-[#000000]/40 overflow-hidden border border-[rgba(225,220,201,0.04)] mb-4">
               <div 
-                key={m.id} 
-                className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-[#94A3B8]"
-              >
-                {m.completed ? (
-                  <CheckCircle2 size={16} className="text-[#16A34A] shrink-0" />
-                ) : (
-                  <Circle size={16} className="text-slate-350 dark:text-slate-600 shrink-0" />
-                )}
-                <span className="truncate">{m.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Action Center - Left/Center Column */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white mb-4">
-              Recommended Next Actions
-            </h2>
-            <div className="space-y-3">
-              {nextActions.map((action) => (
-                <Link 
-                  key={action.id} 
-                  to={action.to}
-                  className={cn(
-                    "flex flex-col sm:flex-row sm:items-center justify-between border-l-4 rounded-r-xl p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm", 
-                    action.color
+                className="h-full bg-gradient-to-r from-[#E1DCC9] to-[#FFFFFF] transition-all duration-750 ease-out" 
+                style={{ width: `${completionPercentage}%` }} 
+              />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {milestones.map((m) => (
+                <div 
+                  key={m.id} 
+                  className="flex items-center gap-2 text-[11px] font-semibold text-[rgba(225,220,201,0.75)]"
+                >
+                  {m.completed ? (
+                    <CheckCircle2 size={14} className="text-[#4CAF50] shrink-0" />
+                  ) : (
+                    <Circle size={14} className="text-[rgba(225,220,201,0.25)] shrink-0" />
                   )}
-                >
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-sans font-bold tracking-widest uppercase opacity-75">{action.type}</span>
-                    <p className="font-heading font-bold text-sm text-slate-800 dark:text-slate-100">{action.title}</p>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2 sm:mt-0 text-xs font-sans font-bold shrink-0 self-end sm:self-center">
-                    <span>{action.due}</span>
-                    <ArrowRight size={14} />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Recommendation Transparency */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">
-              Why We Recommend These Paths
-            </h2>
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Careers */}
-              {recommendedCareers.map((career) => (
-                <div 
-                  key={career.id}
-                  className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Career Match</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-blue-50 dark:bg-blue-950 text-brand dark:text-blue-400 border border-blue-100 dark:border-blue-900">High Match</span>
-                    </div>
-                    <h3 className="font-heading font-extrabold text-base text-slate-800 dark:text-white mt-2">
-                      {career.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-[#94A3B8] font-sans mt-1 line-clamp-2">
-                      {career.description}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-150 dark:border-slate-800/80 text-xs mt-3">
-                    <span className="font-sans font-bold text-slate-400 dark:text-slate-500 block text-[9px] uppercase tracking-wide">Why Recommended</span>
-                    <p className="text-slate-700 dark:text-slate-350 font-sans font-medium mt-1">
-                      {career.matchExplanation || "Matches your STEM academic preferences and technical assessments."}
-                    </p>
-                  </div>
-
-                  <Link 
-                    to={`/careers/${career.id}`}
-                    className="text-xs font-sans font-bold text-brand dark:text-blue-400 hover:text-brand-hover flex items-center gap-1.5 pt-3.5 mt-auto border-t border-slate-100 dark:border-slate-800"
-                  >
-                    Explore Career <ArrowRight size={14} />
-                  </Link>
-                </div>
-              ))}
-
-              {/* Colleges */}
-              {recommendedColleges.map((college) => (
-                <div 
-                  key={college.id}
-                  className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">College Match</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-emerald-50 dark:bg-emerald-950 text-[#16A34A] dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900">Target Fit</span>
-                    </div>
-                    <h3 className="font-heading font-extrabold text-base text-slate-800 dark:text-white mt-2">
-                      {college.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-[#94A3B8] font-sans mt-1 line-clamp-2">
-                      {college.description}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-150 dark:border-slate-800/80 text-xs mt-3">
-                    <span className="font-sans font-bold text-slate-400 dark:text-slate-500 block text-[9px] uppercase tracking-wide">Why Recommended</span>
-                    <p className="text-slate-700 dark:text-slate-350 font-sans font-medium mt-1">
-                      {college.whyRecommended || "Strong alignment with your GPA and intended majors."}
-                    </p>
-                  </div>
-
-                  <Link 
-                    to={`/colleges/${college.id}`}
-                    className="text-xs font-sans font-bold text-brand dark:text-blue-400 hover:text-brand-hover flex items-center gap-1.5 pt-3.5 mt-auto border-t border-slate-100 dark:border-slate-800"
-                  >
-                    View Fit Analysis <ArrowRight size={14} />
-                  </Link>
+                  <span className="truncate">{m.label}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Right Sidebar Columns: Insights, Snapshots & Analytics */}
-        <div className="space-y-6">
-          {/* Academic Snapshot */}
-          <div className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+        {/* Row 1: Academic Snapshot */}
+        <div className="col-span-12 lg:col-span-4 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+          <div>
             <div className="flex items-center gap-2 mb-4">
-              <Award className="text-brand dark:text-blue-400" size={20} />
-              <h2 className="text-lg font-heading font-extrabold text-slate-900 dark:text-white">
+              <Award className="text-[#E1DCC9]" size={18} />
+              <h2 className="text-sm font-heading font-extrabold text-[#F5F2EA] uppercase tracking-wider">
                 Academic Snapshot
               </h2>
             </div>
             
-            <div className="divide-y divide-slate-100 dark:divide-slate-850">
-              <div className="py-3 flex items-center justify-between">
-                <span className="text-sm text-slate-500 dark:text-[#94A3B8] font-sans font-medium">Cumulative GPA</span>
-                <span className="font-number font-extrabold text-lg text-slate-800 dark:text-white">
+            <div className="divide-y divide-[rgba(225,220,201,0.08)]">
+              <div className="py-2.5 flex items-center justify-between">
+                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">Cumulative GPA</span>
+                <span className="font-number font-extrabold text-sm text-[#FFFFFF]">
                   {profile?.gpa ? profile.gpa.toFixed(2) : "N/A"}
                 </span>
               </div>
-              <div className="py-3 flex items-center justify-between">
-                <span className="text-sm text-slate-500 dark:text-[#94A3B8] font-sans font-medium">SAT / ACT Score</span>
-                <span className="font-number font-extrabold text-lg text-slate-800 dark:text-white">
+              <div className="py-2.5 flex items-center justify-between">
+                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">SAT / ACT Score</span>
+                <span className="font-number font-extrabold text-sm text-[#FFFFFF]">
                   {profile?.satAct || "N/A"}
                 </span>
               </div>
-              <div className="py-3 flex items-center justify-between">
-                <span className="text-sm text-slate-500 dark:text-[#94A3B8] font-sans font-medium">Saved Colleges</span>
-                <span className="font-number font-extrabold text-lg text-slate-800 dark:text-white">
+              <div className="py-2.5 flex items-center justify-between">
+                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">Saved Colleges</span>
+                <span className="font-number font-extrabold text-sm text-[#FFFFFF]">
                   {saved.length}
                 </span>
               </div>
-              <div className="py-3 flex items-center justify-between">
-                <span className="text-sm text-slate-500 dark:text-[#94A3B8] font-sans font-medium">Competitiveness</span>
-                <span className="px-2 py-0.5 rounded text-xs font-sans font-bold bg-indigo-50 dark:bg-indigo-950 text-brand dark:text-indigo-400">
+              <div className="py-2.5 flex items-center justify-between">
+                <span className="text-xs text-[rgba(225,220,201,0.65)] font-sans">Competitiveness</span>
+                <Badge tone={competitiveness === "Highly Competitive" ? "emerald" : competitiveness === "Competitive" ? "blue" : "slate"}>
                   {competitiveness}
-                </span>
+                </Badge>
               </div>
             </div>
-
-            <Link to="/profile">
-              <button className="w-full text-center py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-sans font-bold text-xs rounded-xl hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors mt-4">
-                Update Profile Academics
-              </button>
-            </Link>
           </div>
 
-          {/* Analytics Visualization Widget */}
-          <div className="bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <Link to="/profile" className="mt-4">
+            <button className="w-full text-center py-2 bg-[#412D15] text-[#E1DCC9] border border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl hover:bg-[#523A1D] transition-all duration-200">
+              Update Profile Academics
+            </button>
+          </Link>
+        </div>
+
+        {/* Row 2: Recommended Next Actions */}
+        <div className="col-span-12 lg:col-span-8 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)]">
+          <h2 className="text-base font-heading font-extrabold text-[#F5F2EA] mb-4">
+            Recommended Next Actions
+          </h2>
+          <div className="space-y-3">
+            {nextActions.map((action) => (
+              <Link 
+                key={action.id} 
+                to={action.to}
+                className={cn(
+                  "flex flex-col sm:flex-row sm:items-center justify-between border rounded-xl p-4 transition-all duration-200 hover:bg-[#1A1A1A] hover:-translate-y-0.5 shadow-sm", 
+                  action.color
+                )}
+              >
+                <div className="space-y-1">
+                  <span className="text-[9px] font-sans font-bold tracking-widest uppercase opacity-75">{action.type}</span>
+                  <p className="font-heading font-bold text-sm text-[#FFFFFF]">{action.title}</p>
+                </div>
+                <div className="flex items-center gap-2 mt-2 sm:mt-0 text-xs font-sans font-bold shrink-0 self-end sm:self-center">
+                  <span>{action.due}</span>
+                  <ArrowRight size={14} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2: Upcoming Deadlines */}
+        <div className="col-span-12 lg:col-span-4 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+          <div>
+            <h2 className="text-sm font-heading font-extrabold text-[#F5F2EA] uppercase tracking-wider mb-4">
+              Upcoming Deadlines
+            </h2>
+            
+            {upcomingDeadlines.length === 0 ? (
+              <div className="py-6 text-center text-xs text-[rgba(225,220,201,0.5)] font-sans">
+                No active application deadlines. Save colleges and shortlist them to track dates.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingDeadlines.map((dead) => (
+                  <div 
+                    key={dead.id} 
+                    className="p-3 bg-[#1A1A1A]/60 border border-[rgba(225,220,201,0.04)] rounded-xl flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-heading font-bold text-[#FFFFFF] truncate">{dead.collegeName}</p>
+                      <p className="text-[10px] text-[rgba(225,220,201,0.5)] font-sans mt-0.5">{dead.deadlineDate} • {dead.status}</p>
+                    </div>
+                    <div className={cn(
+                      "shrink-0 px-2 py-1 rounded text-[10px] font-sans font-bold",
+                      dead.daysLeft <= 7 ? "bg-[rgba(201,74,74,0.15)] text-[#C94A4A] animate-pulse" : "bg-[#1F150C] text-[#E1DCC9]"
+                    )}>
+                      {dead.daysLeft !== null ? (dead.daysLeft < 0 ? "Overdue" : `${dead.daysLeft}d left`) : "TBD"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link to="/tracker" className="mt-4">
+            <button className="w-full text-center py-2 bg-[#412D15] text-[#E1DCC9] border border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl hover:bg-[#523A1D] transition-all duration-200">
+              View Tracker Calendar
+            </button>
+          </Link>
+        </div>
+
+        {/* Row 3: Career Matches */}
+        <div className="col-span-12 lg:col-span-8 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)]">
+          <h2 className="text-base font-heading font-extrabold text-[#F5F2EA] mb-4">
+            Career Matches & Strategic Rationale
+          </h2>
+          
+          <div className="grid gap-4 md:grid-cols-2">
+            {recommendedCareers.map((career) => (
+              <div 
+                key={career.id}
+                className="bg-[#1A1A1A]/40 border border-[rgba(225,220,201,0.05)] rounded-2xl p-5 shadow-sm space-y-3 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-sans font-bold uppercase tracking-wider text-[rgba(225,220,201,0.5)]">Career Match</span>
+                    <Badge tone="emerald">High Match</Badge>
+                  </div>
+                  <h3 className="font-heading font-extrabold text-sm text-[#FFFFFF] mt-2">
+                    {career.title}
+                  </h3>
+                  <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mt-1 line-clamp-2">
+                    {career.description}
+                  </p>
+                </div>
+
+                <div className="bg-[#1F150C]/60 p-3 rounded-xl border border-[rgba(225,220,201,0.06)] text-[11px] mt-3">
+                  <span className="font-sans font-bold text-[rgba(225,220,201,0.4)] block text-[9px] uppercase tracking-wide">Why Recommended</span>
+                  <p className="text-[rgba(225,220,201,0.8)] font-sans font-medium mt-1 leading-relaxed">
+                    {career.matchExplanation || "Matches your STEM academic preferences and technical assessments."}
+                  </p>
+                </div>
+
+                <Link 
+                  to={`/careers/${career.id}`}
+                  className="text-xs font-sans font-bold text-[#E1DCC9] hover:text-[#FFFFFF] flex items-center gap-1.5 pt-3 mt-auto border-t border-[rgba(225,220,201,0.06)]"
+                >
+                  View Career Path <ArrowRight size={14} />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 3: College Insights (Cost vs Salary Chart) */}
+        <div className="col-span-12 lg:col-span-4 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+          <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-heading font-extrabold text-slate-900 dark:text-white">
-                Cost vs Potential Salary
+              <h2 className="text-sm font-heading font-extrabold text-[#F5F2EA] uppercase tracking-wider">
+                College ROI Insights
               </h2>
-              <BarChart3 className="text-slate-400 dark:text-slate-500" size={18} />
+              <BarChart3 className="text-[rgba(225,220,201,0.5)]" size={16} />
             </div>
             
-            <p className="text-[10px] text-slate-400 dark:text-[#94A3B8] font-sans font-medium mb-3">
-              A side-by-side comparison of annual tuition fees vs average starting salary for saved colleges.
+            <p className="text-[10px] text-[rgba(225,220,201,0.6)] font-sans font-medium mb-3">
+              Side-by-side: Tuition fees vs average starting salary for saved colleges.
             </p>
 
-            <div className="h-48 w-full font-number text-[9px]">
+            <div className="h-44 w-full font-number text-[8px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} stroke="#94A3B8" />
-                  <YAxis tickLine={false} axisLine={false} stroke="#94A3B8" />
+                  <CartesianGrid stroke="rgba(225,220,201,0.08)" strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} stroke="rgba(225,220,201,0.4)" tick={{ fill: '#E1DCC9' }} />
+                  <YAxis tickLine={false} axisLine={false} stroke="rgba(225,220,201,0.4)" tick={{ fill: '#E1DCC9' }} />
                   <Tooltip 
                     contentStyle={{ 
-                      background: "rgba(30, 41, 59, 0.9)", 
-                      border: "none", 
-                      borderRadius: "8px",
-                      color: "#F8FAFC",
+                      background: "#111111", 
+                      border: "1px solid rgba(225,220,201,0.1)", 
+                      borderRadius: "12px",
+                      color: "#E1DCC9",
                       fontFamily: "Inter"
                     }} 
                   />
-                  <Bar dataKey="Tuition" fill="#3B5BDB" name="Tuition Cost" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Salary" fill="#16A34A" name="Starting Salary" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Tuition" fill="#D4A017" name="Tuition Cost" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Salary" fill="#4CAF50" name="Starting Salary" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex items-center justify-center gap-4 mt-2 text-[10px] font-sans font-semibold text-slate-500">
+            <div className="flex items-center justify-center gap-4 mt-2 text-[10px] font-sans font-semibold text-[rgba(225,220,201,0.6)]">
               <div className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-[#3B5BDB]" />
+                <span className="size-2 rounded-full bg-[#D4A017]" />
                 <span>Tuition Fees</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="size-2 rounded-full bg-[#16A34A]" />
-                <span>Est Salary</span>
+                <span className="size-2 rounded-full bg-[#4CAF50]" />
+                <span>Starting Salary</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Row 4: Application Health Score */}
+        <div className="col-span-12 lg:col-span-6 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-heading font-extrabold text-[#F5F2EA]">
+                Application Health Score
+              </h2>
+              <Badge tone={applicationHealth.score >= 75 ? "emerald" : applicationHealth.score >= 45 ? "blue" : "rose"}>
+                {applicationHealth.label}
+              </Badge>
+            </div>
+            
+            <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mb-4">
+              An aggregate health check of documents, essays, and references for all tracked applications.
+            </p>
+
+            <div className="flex items-center gap-6 py-2">
+              <div className="relative size-20 shrink-0">
+                <svg className="size-full -rotate-90">
+                  <circle cx="40" cy="40" r="34" className="stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="5.5" />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="34"
+                    className={cn(
+                      "fill-none transition-all duration-500",
+                      applicationHealth.score >= 75 ? "stroke-[#4CAF50]" : applicationHealth.score >= 45 ? "stroke-[#6C8EFF]" : "stroke-[#C94A4A]"
+                    )}
+                    strokeWidth="5.5"
+                    strokeDasharray={2 * Math.PI * 34}
+                    strokeDashoffset={2 * Math.PI * 34 - (applicationHealth.score / 100) * (2 * Math.PI * 34)}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-number font-extrabold text-[#FFFFFF]">
+                  {applicationHealth.score}%
+                </span>
+              </div>
+
+              <div className="space-y-1.5 text-xs font-sans w-full">
+                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
+                  <span className="text-[rgba(225,220,201,0.6)]">Shortlisted targets</span>
+                  <span className="font-semibold text-[#FFFFFF]">{applications.length} Colleges</span>
+                </div>
+                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
+                  <span className="text-[rgba(225,220,201,0.6)]">Document completeness</span>
+                  <span className="font-semibold text-[#FFFFFF]">
+                    {applications.filter(a => a.completeness && a.completeness >= 80).length} / {applications.length} ready
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
+                  <span className="text-[rgba(225,220,201,0.6)]">Next milestone deadline</span>
+                  <span className="font-semibold text-[#FFFFFF]">
+                    {applications.length > 0 ? "Tracked" : "No active deadlines"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 4: College Readiness Score */}
+        <div className="col-span-12 lg:col-span-6 bg-[#111111] border border-[rgba(225,220,201,0.06)] rounded-2xl p-6 shadow-[0px_12px_32px_rgba(0,0,0,0.35)] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-heading font-extrabold text-[#F5F2EA]">
+                College Readiness Score
+              </h2>
+              <Badge tone={readinessScore.score >= 75 ? "emerald" : readinessScore.score >= 50 ? "blue" : "slate"}>
+                {readinessScore.label}
+              </Badge>
+            </div>
+
+            <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mb-4">
+              Calculates structural preparedness based on your academic markers, targets, and activity completeness.
+            </p>
+
+            <div className="flex items-center gap-6 py-2">
+              <div className="relative size-20 shrink-0">
+                <svg className="size-full -rotate-90">
+                  <circle cx="40" cy="40" r="34" className="stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="5.5" />
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="34"
+                    className={cn(
+                      "fill-none transition-all duration-500",
+                      readinessScore.score >= 75 ? "stroke-[#4CAF50]" : readinessScore.score >= 50 ? "stroke-[#6C8EFF]" : "stroke-[#D4A017]"
+                    )}
+                    strokeWidth="5.5"
+                    strokeDasharray={2 * Math.PI * 34}
+                    strokeDashoffset={2 * Math.PI * 34 - (readinessScore.score / 100) * (2 * Math.PI * 34)}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-number font-extrabold text-[#FFFFFF]">
+                  {readinessScore.score}
+                </span>
+              </div>
+
+              <div className="space-y-1.5 text-xs font-sans w-full">
+                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
+                  <span className="text-[rgba(225,220,201,0.6)]">Academic details linked</span>
+                  <span className="font-semibold text-[#FFFFFF]">{(profile?.gpa && profile?.grade) ? "Complete" : "Incomplete"}</span>
+                </div>
+                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
+                  <span className="text-[rgba(225,220,201,0.6)]">Standardized tests recorded</span>
+                  <span className="font-semibold text-[#FFFFFF]">{profile?.satAct ? "Complete" : "Incomplete"}</span>
+                </div>
+                <div className="flex justify-between items-center text-[11px] border-b border-[rgba(225,220,201,0.05)] pb-1">
+                  <span className="text-[rgba(225,220,201,0.6)]">Extracurricular mapping</span>
+                  <span className="font-semibold text-[#FFFFFF]">{(profile?.activities && profile.activities.length > 0) ? "Active" : "None"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
