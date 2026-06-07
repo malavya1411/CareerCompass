@@ -51,6 +51,18 @@ We have successfully completed the comprehensive UX/UI redesign and product logi
 - **College Discovery & Comparison**: Redesigned [CollegeExplorer.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/colleges/components/CollegeExplorer.tsx), [CollegeCard.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/colleges/components/CollegeCard.tsx), [CollegeDetails.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/colleges/components/CollegeDetails.tsx), and [Comparison.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/colleges/components/Comparison.tsx).
 - **Tracker & Profile Settings**: Rewrote [Tracker.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/tracker/components/Tracker.tsx), [KanbanCard.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/tracker/components/KanbanCard.tsx), [DeadlineCalendarView.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/tracker/components/DeadlineCalendarView.tsx), [EditApplication.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/tracker/components/EditApplication.tsx), and [Profile.tsx](file:///Users/malavyamankar/Codes/CareerCompass/src/features/profile/components/Profile.tsx).
 
+8. **Floating UI elements & Modals Fixes**:
+   - Added Escape key down listeners to close all drawers (`CareerExplorer` drawer, `CollegeExplorer` drawer) and tracker modals (`AddCollegeModal`, `NoteModal`, `EditApplication`).
+   - Added backdrop/overlay click listeners to dismiss the tracker modals.
+   - Added scroll event capture listeners to dismiss the filter popover and compare dropdown immediately when scrolling the page.
+   - Added location path change listener (using React Router `useLocation`) to dismiss the persistently rendered compare dropdown upon navigation.
+   - Hid sliding drawers completely (`invisible pointer-events-none`) when closed to avoid rendering empty white margins and horizontal layout overflow.
+
+9. **Project Root Cleanup**:
+   - Removed duplicate/redundant configuration files (`vite.config.js` and `vite.config.d.ts`).
+   - Confirmed `vite.config.ts` is the active, referenced configuration.
+   - Created `docs/` directory and moved `walkthrough.md` there to keep the root directory neat and professional.
+
 ---
 
 ## Verification and Build Result
@@ -59,3 +71,4 @@ We verified the build stability using:
 `npm run build`
 
 All TypeScript checks and chunk minifications completed successfully.
+
