@@ -123,18 +123,19 @@ export function Tracker() {
       {/* Main content display based on viewMode */}
       {applications.length ? (
         viewMode === "kanban" ? (
-          <div className="grid gap-4 xl:grid-cols-5 mt-2">
+          <div className="flex gap-4 overflow-x-auto pb-4 mt-2 select-none">
             {statuses.map((status) => (
-              <KanbanColumn
-                key={status}
-                status={status}
-                apps={applications.filter((app) => app.status === status)}
-                colleges={colleges}
-                onEdit={setEditing}
-                onAddNote={setNoting}
-                onMoveStage={handleMoveStage}
-                onRemove={handleRemove}
-              />
+              <div key={status} className="w-[280px] shrink-0">
+                <KanbanColumn
+                  status={status}
+                  apps={applications.filter((app) => app.status === status)}
+                  colleges={colleges}
+                  onEdit={setEditing}
+                  onAddNote={setNoting}
+                  onMoveStage={handleMoveStage}
+                  onRemove={handleRemove}
+                />
+              </div>
             ))}
           </div>
         ) : (

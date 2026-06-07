@@ -68,6 +68,13 @@ const demoStarterApplications = (): Application[] => {
       notes: "Researching cutoff ranks for Computer Science and Engineering branch.",
       completeness: 20,
       createdAt: new Date(),
+      priority: "Medium",
+      requiredDocuments: [
+        { name: "Personal Essay", status: "Uploaded" },
+        { name: "Transcript", status: "Uploaded" },
+        { name: "Recommendation Letter", status: "Missing" }
+      ],
+      lastUpdated: new Date()
     },
     {
       id: "demo-app-2",
@@ -76,18 +83,32 @@ const demoStarterApplications = (): Application[] => {
       status: "Shortlisted",
       deadline: d(30),
       notes: "BITSAT score meets cutoff. Need to finalize campus preference.",
-      completeness: 40,
+      completeness: 30,
       createdAt: new Date(),
+      priority: "High",
+      requiredDocuments: [
+        { name: "Personal Essay", status: "Missing" },
+        { name: "Transcript", status: "Uploaded" },
+        { name: "Recommendation Letter", status: "Missing" }
+      ],
+      lastUpdated: new Date()
     },
     {
       id: "demo-app-3",
       userId: "demo-user",
       collegeId: "iit-bombay",
       status: "Applying",
-      deadline: d(10),
+      deadline: d(3),
       notes: "JEE Advanced preparation and JoSAA registration details under review.",
-      completeness: 65,
+      completeness: 45,
       createdAt: new Date(),
+      priority: "High",
+      requiredDocuments: [
+        { name: "Personal Essay", status: "Uploaded" },
+        { name: "Transcript", status: "Missing" },
+        { name: "Recommendation Letter", status: "Uploaded" }
+      ],
+      lastUpdated: new Date()
     },
     {
       id: "demo-app-4",
@@ -96,8 +117,15 @@ const demoStarterApplications = (): Application[] => {
       status: "Submitted",
       deadline: d(60),
       notes: "Application submitted via JoSAA portal. Awaiting seat allotment.",
-      completeness: 90,
+      completeness: 70,
       createdAt: new Date(),
+      priority: "Medium",
+      requiredDocuments: [
+        { name: "Personal Essay", status: "Uploaded" },
+        { name: "Transcript", status: "Uploaded" },
+        { name: "Recommendation Letter", status: "Uploaded" }
+      ],
+      lastUpdated: new Date()
     },
     {
       id: "demo-app-5",
@@ -106,8 +134,16 @@ const demoStarterApplications = (): Application[] => {
       status: "Decision",
       deadline: d(5),
       notes: "Received offer for CS branch. Need to confirm by deadline.",
-      completeness: 100,
+      completeness: 90,
       createdAt: new Date(),
+      decisionOutcome: "Accepted",
+      priority: "High",
+      requiredDocuments: [
+        { name: "Personal Essay", status: "Uploaded" },
+        { name: "Transcript", status: "Uploaded" },
+        { name: "Recommendation Letter", status: "Uploaded" }
+      ],
+      lastUpdated: new Date()
     },
   ];
 };
@@ -237,7 +273,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         d.setMonth(d.getMonth() + 3);
         return d;
       })();
-      const completeness = targetStatus === "Decision" ? 100 : targetStatus === "Submitted" ? 90 : targetStatus === "Applying" ? 50 : targetStatus === "Shortlisted" ? 30 : 0;
+      const completeness = 
+        targetStatus === "Enrolled" || targetStatus === "Accepted" || targetStatus === "Rejected" ? 100 :
+        targetStatus === "Decision" ? 90 :
+        targetStatus === "Interview" ? 80 :
+        targetStatus === "Submitted" ? 70 :
+        targetStatus === "Applying" ? 45 :
+        targetStatus === "Shortlisted" ? 30 :
+        targetStatus === "Interested" ? 20 : 10;
 
       if (isDemo) {
         const newApp: Application = {
@@ -249,6 +292,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           notes: "",
           completeness,
           createdAt: new Date(),
+          priority: "Medium",
+          requiredDocuments: [
+            { name: "Personal Essay", status: "Missing" },
+            { name: "Transcript", status: "Missing" },
+            { name: "Recommendation Letter", status: "Missing" }
+          ],
+          lastUpdated: new Date()
         };
         const updated = [...applications, newApp];
         setApplications(updated);
@@ -265,6 +315,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           notes: "",
           completeness,
           createdAt: serverTimestamp(),
+          priority: "Medium",
+          requiredDocuments: [
+            { name: "Personal Essay", status: "Missing" },
+            { name: "Transcript", status: "Missing" },
+            { name: "Recommendation Letter", status: "Missing" }
+          ],
+          lastUpdated: Timestamp.fromDate(new Date())
         });
       }
     },

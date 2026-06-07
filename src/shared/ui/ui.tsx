@@ -54,8 +54,8 @@ export function Progress({ value }: { value: number }) {
   );
 }
 
-export function Separator() {
-  return <div className="h-px w-full bg-slate-200/70" />;
+export function Separator({ className }: { className?: string }) {
+  return <div className={cn("h-px w-full bg-slate-200/70", className)} />;
 }
 
 export function Field({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {

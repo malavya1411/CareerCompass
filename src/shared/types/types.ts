@@ -1,5 +1,15 @@
 export type GrowthOutlook = "High" | "Medium" | "Low";
-export type AppStatus = "Researching" | "Shortlisted" | "Applying" | "Submitted" | "Decision";
+export type AppStatus = 
+  | "Researching" 
+  | "Interested" 
+  | "Shortlisted" 
+  | "Applying" 
+  | "Submitted" 
+  | "Interview" 
+  | "Decision" 
+  | "Accepted" 
+  | "Rejected" 
+  | "Enrolled";
 
 export type StudentProfile = {
   displayName: string;
@@ -13,6 +23,11 @@ export type StudentProfile = {
   careerInterests: string[];
   activities: string[];
   savedColleges?: string[];
+  dreamSchool?: string;
+  targetSchool?: string;
+  safetySchool?: string;
+  budget?: number;
+  preferredSize?: string;
 };
 
 export type Career = {
@@ -25,6 +40,11 @@ export type Career = {
   salaryRange: string;
   growthOutlook: GrowthOutlook;
   relatedMajors: string[];
+  projectedDemand?: string;
+  dayInLife?: string;
+  salaryProgression?: { level: string; salary: string }[];
+  careerRoadmap?: string[];
+  matchExplanation?: string;
 };
 
 export type College = {
@@ -39,6 +59,16 @@ export type College = {
   majors: string[];
   description: string;
   logoUrl?: string;
+  averageSalary?: number;
+  placementRate?: number;
+  csRanking?: number;
+  scholarships?: string;
+  campusSize?: string;
+  studentFacultyRatio?: string;
+  applicationDeadline?: string;
+  admissionsGpaMedian?: number;
+  admissionsSatMedian?: number;
+  whyRecommended?: string;
 };
 
 export type Application = {
@@ -51,4 +81,7 @@ export type Application = {
   completeness: number;
   decisionOutcome?: "Accepted" | "Rejected" | "Waitlisted";
   createdAt: Date;
+  priority?: "Low" | "Medium" | "High";
+  requiredDocuments?: { name: string; status: "Missing" | "Uploaded" }[];
+  lastUpdated?: Date;
 };
