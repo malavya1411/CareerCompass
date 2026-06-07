@@ -56,16 +56,23 @@ export function LandingPage() {
             <Button 
               onClick={() => navigate("/signin")} 
               variant="outline"
-              className="h-8.5 text-xs font-bold border-slate-200 hover:border-slate-300 text-slate-700 bg-white"
+              className="h-10 px-5 text-sm font-bold border-slate-200 hover:border-slate-300 text-slate-700 bg-white rounded-xl"
             >
               Sign In
+            </Button>
+            <Button 
+              onClick={() => navigate("/signin?mode=register")} 
+              variant="primary"
+              className="h-10 px-5 text-sm font-bold rounded-xl shadow-lg shadow-blue-500/20"
+            >
+              Get Started <ArrowRight size={15} className="ml-1" />
             </Button>
           </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="flex-grow pt-24 pb-16 px-4">
+      <main className="flex-grow pt-32 pb-16 px-4">
         <div className="mx-auto max-w-6xl space-y-24">
           
           {/* Hero Section */}
