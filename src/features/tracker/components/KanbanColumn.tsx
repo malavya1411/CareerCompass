@@ -22,39 +22,74 @@ export function KanbanColumn({
 }) {
   const config = {
     Researching: {
-      bg: "bg-blue-50/30 border-blue-100/50",
-      accent: "bg-blue-500",
-      text: "text-blue-800",
-      border: "border-blue-200",
+      bg: "bg-slate-50/50 dark:bg-slate-900/10 border-slate-200 dark:border-slate-800",
+      accent: "bg-slate-500",
+      text: "text-slate-800 dark:text-slate-200",
+      border: "border-slate-200 dark:border-slate-800",
+      tagTone: "slate" as const
+    },
+    Interested: {
+      bg: "bg-sky-50/20 dark:bg-sky-950/5 border-sky-100/50 dark:border-sky-900/20",
+      accent: "bg-sky-500",
+      text: "text-sky-850 dark:text-sky-300",
+      border: "border-sky-200 dark:border-sky-900/50",
       tagTone: "blue" as const
     },
     Shortlisted: {
-      bg: "bg-amber-50/30 border-amber-100/50",
+      bg: "bg-amber-50/30 dark:bg-amber-950/5 border-amber-100/50 dark:border-amber-900/20",
       accent: "bg-amber-500",
-      text: "text-amber-800",
-      border: "border-amber-200",
+      text: "text-amber-800 dark:text-amber-300",
+      border: "border-amber-200 dark:border-amber-900/50",
       tagTone: "amber" as const
     },
     Applying: {
-      bg: "bg-orange-50/30 border-orange-100/50",
+      bg: "bg-orange-50/30 dark:bg-orange-950/5 border-orange-100/50 dark:border-orange-900/20",
       accent: "bg-orange-500",
-      text: "text-orange-800",
-      border: "border-orange-200",
+      text: "text-orange-800 dark:text-orange-300",
+      border: "border-orange-200 dark:border-orange-900/50",
       tagTone: "rose" as const
     },
     Submitted: {
-      bg: "bg-purple-50/30 border-purple-100/50",
-      accent: "bg-purple-500",
-      text: "text-purple-800",
-      border: "border-purple-200",
+      bg: "bg-indigo-50/20 dark:bg-indigo-950/5 border-indigo-100/50 dark:border-indigo-900/20",
+      accent: "bg-indigo-500",
+      text: "text-indigo-800 dark:text-indigo-300",
+      border: "border-indigo-200 dark:border-indigo-900/50",
+      tagTone: "blue" as const
+    },
+    Interview: {
+      bg: "bg-pink-50/20 dark:bg-pink-950/5 border-pink-100/50 dark:border-pink-900/20",
+      accent: "bg-pink-500",
+      text: "text-pink-800 dark:text-pink-300",
+      border: "border-pink-200 dark:border-pink-900/50",
       tagTone: "rose" as const
     },
     Decision: {
-      bg: "bg-emerald-50/20 border-emerald-100/40",
+      bg: "bg-purple-50/20 dark:bg-purple-950/5 border-purple-100/50 dark:border-purple-900/20",
+      accent: "bg-purple-500",
+      text: "text-purple-800 dark:text-purple-300",
+      border: "border-purple-200 dark:border-purple-900/50",
+      tagTone: "rose" as const
+    },
+    Accepted: {
+      bg: "bg-emerald-50/20 dark:bg-emerald-950/5 border-emerald-100/40 dark:border-emerald-900/20",
       accent: "bg-emerald-500",
-      text: "text-emerald-800",
-      border: "border-emerald-200",
+      text: "text-emerald-800 dark:text-emerald-300",
+      border: "border-emerald-200 dark:border-emerald-900/50",
       tagTone: "emerald" as const
+    },
+    Rejected: {
+      bg: "bg-rose-50/20 dark:bg-rose-950/5 border-rose-100/40 dark:border-rose-900/20",
+      accent: "bg-rose-500",
+      text: "text-rose-800 dark:text-rose-300",
+      border: "border-rose-200 dark:border-rose-900/50",
+      tagTone: "rose" as const
+    },
+    Enrolled: {
+      bg: "bg-blue-50/30 dark:bg-blue-950/10 border-blue-100/50 dark:border-blue-900/20",
+      accent: "bg-[#3B5BDB]",
+      text: "text-[#3B5BDB] dark:text-blue-400",
+      border: "border-blue-200 dark:border-blue-900/50",
+      tagTone: "blue" as const
     }
   }[status];
 

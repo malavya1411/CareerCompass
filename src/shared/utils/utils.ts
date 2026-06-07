@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const statuses: AppStatus[] = ["Researching", "Shortlisted", "Applying", "Submitted", "Decision"];
+export const statuses: AppStatus[] = ["Researching", "Interested", "Shortlisted", "Applying", "Submitted", "Interview", "Decision", "Accepted", "Rejected", "Enrolled"];
 export const categories = ["STEM", "Business", "Healthcare", "Arts", "Education", "Law"] as const;
 
 export function growthScore(outlook: GrowthOutlook) {

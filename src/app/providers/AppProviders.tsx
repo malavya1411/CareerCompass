@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "../../features/auth";
 import { CompareProvider } from "../../features/colleges";
+import { ThemeProvider } from "./ThemeContext";
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -10,11 +11,13 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CompareProvider>
-          {children}
-        </CompareProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <CompareProvider>
+            {children}
+          </CompareProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
