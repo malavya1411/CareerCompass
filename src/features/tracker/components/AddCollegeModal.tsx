@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { Card, Button, Field, Select, Input, statuses } from "../../../shared";
 import type { College, AppStatus } from "../../../shared";
@@ -22,6 +22,23 @@ export function AddCollegeModal({
     return d.toISOString().slice(0, 10);
   });
   const [loading, setLoading] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === overlayRef.current) {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,7 +63,7 @@ export function AddCollegeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
+    <div ref={overlayRef} onClick={handleOverlayClick} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
       <Card className="w-full max-w-lg p-6 bg-white rounded-2xl shadow-xl modal-content">
         <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-3">
           <h2 className="text-xl font-extrabold text-slate-900">Add College to Tracker</h2>

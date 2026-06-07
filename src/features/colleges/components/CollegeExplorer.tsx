@@ -45,13 +45,33 @@ export function CollegeExplorer() {
         setShowFilters(false);
       }
     }
+    function handleScroll() {
+      setShowFilters(false);
+    }
     if (showFilters) {
       document.addEventListener("mousedown", handleClickOutside);
+      window.addEventListener("scroll", handleScroll, true);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
     };
   }, [showFilters]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowFilters(false);
+        setShowDrawer(false);
+      }
+    }
+    if (showFilters || showDrawer) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showFilters, showDrawer]);
 
   const activeFiltersCount = useMemo(() => {
     let count = 0;
@@ -474,7 +494,7 @@ export function CollegeExplorer() {
           <div 
             className={cn(
               "fixed inset-y-0 right-0 z-50 w-[420px] bg-[#111111] border-l border-[rgba(225,220,201,0.08)] shadow-[0px_0px_48px_rgba(0,0,0,0.8)] transform transition-transform duration-300 ease-in-out flex flex-col justify-between text-left",
-              showDrawer ? "translate-x-0" : "translate-x-full"
+              showDrawer ? "translate-x-0" : "translate-x-full invisible pointer-events-none"
             )}
           >
             {selectedCollege && fitScoreDetails ? (

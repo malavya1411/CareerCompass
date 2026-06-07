@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { useAuth } from "../../auth";
 import { Card, Button, Field, Textarea } from "../../../shared";
@@ -16,6 +16,23 @@ export function NoteModal({
   const { updateApplication } = useAuth();
   const [notes, setNotes] = useState(app.notes);
   const [loading, setLoading] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === overlayRef.current) {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +48,7 @@ export function NoteModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
+    <div ref={overlayRef} onClick={handleOverlayClick} className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 modal-overlay">
       <Card className="w-full max-w-md p-6 bg-white rounded-2xl shadow-xl modal-content">
         <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
