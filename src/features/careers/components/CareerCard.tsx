@@ -1,5 +1,5 @@
-import { BriefcaseBusiness, Heart, BarChart3, ArrowRight } from "lucide-react";
-import { Card, Badge, Separator, GrowthBadge, cn, Button } from "../../../shared";
+import { BriefcaseBusiness, Heart, BarChart3, ArrowRight, TrendingUp, User, Check, Wallet, LineChart } from "lucide-react";
+import { Card, Badge, Separator, cn, Button } from "../../../shared";
 import type { Career } from "../../../shared";
 import { useAuth } from "../../auth";
 import React from "react";
@@ -29,18 +29,30 @@ export function CareerCard({
     return Math.min(99, score);
   }, [profile, career]);
 
-  const saved = profile?.careerInterests.includes(career.category);
-
-  const handleSaveToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (!profile) return;
-    const currentInterests = profile.careerInterests || [];
-    const updatedInterests = currentInterests.includes(career.category)
-      ? currentInterests.filter((c) => c !== career.category)
-      : [...currentInterests, career.category];
-    saveProfile({ careerInterests: updatedInterests });
-  };
+  const matchPoints = React.useMemo(() => {
+    if (career.matchExplanation) {
+      let text = career.matchExplanation;
+      text = text.replace(/Strong match due to |Matches your /i, '');
+      const parts = text.split(/,|\band\b/).map(p => p.trim()).filter(Boolean);
+      if (parts.length >= 3) {
+        return [
+          parts[0].charAt(0).toUpperCase() + parts[0].slice(1),
+          parts[1].charAt(0).toUpperCase() + parts[1].slice(1),
+          parts[2].replace(/\.$/, '').charAt(0).toUpperCase() + parts[2].replace(/\.$/, '').slice(1)
+        ];
+      }
+    }
+    // Fallbacks based on category
+    if (career.category === "STEM") {
+      return ["Strong interest in Coding", "Leadership in Robotics club", "Excellent STEM academic profile"];
+    } else if (career.category === "Business") {
+      return ["Interest in business management", "Strong presentation skills", "Highly analytic profile"];
+    } else if (career.category === "Healthcare") {
+      return ["Interest in clinical science", "Strong empathy and care skills", "High biology aptitude"];
+    } else {
+      return ["Interest in career pathways", "Excellent verbal/written skills", "High matching academic profile"];
+    }
+  }, [career]);
 
   const cardColors = {
     STEM: "border-l-[#6C8EFF]",       // Info
@@ -61,7 +73,7 @@ export function CareerCard({
     >
       <div className="space-y-3">
         {/* Top bar */}
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className={cn("grid size-8 place-items-center rounded-lg border",
               career.category === "STEM" && "bg-[rgba(108,142,255,0.08)] border-[rgba(108,142,255,0.15)] text-[#6C8EFF]",
@@ -78,85 +90,149 @@ export function CareerCard({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              className={cn("size-8 p-0 rounded-full", isComparing ? "bg-[#4C43CD] dark:bg-[#1F150C] text-white" : "text-secondary hover:bg-[#F1EEDD] dark:hover:bg-[#1A1A1A]")}
-              onClick={onCompareToggle}
-              title="Compare Career"
-            >
-              <BarChart3 size={15} />
-            </Button>
-            <Button
-              variant="ghost"
-              className="size-8 p-0 rounded-full hover:bg-[rgba(201,74,74,0.08)]"
-              onClick={handleSaveToggle}
-              title="Save Career Category"
-            >
-              <Heart size={15} className={cn("transition-all", saved ? "fill-[#C94A4A] text-[#C94A4A] scale-110" : "text-secondary")} />
-            </Button>
+          {/* Large Circular Match Badge */}
+          <div className="relative size-14 shrink-0 flex items-center justify-center select-none">
+            <svg className="absolute inset-0 size-full -rotate-90">
+              <circle 
+                cx="28" 
+                cy="28" 
+                r="24" 
+                className="stroke-[rgba(0,0,0,0.06)] dark:stroke-[rgba(225,220,201,0.06)] fill-none" 
+                strokeWidth="3.5" 
+              />
+              <circle
+                cx="28"
+                cy="28"
+                r="24"
+                className="stroke-[#4CAF50] fill-none transition-all duration-500"
+                strokeWidth="3.5"
+                strokeDasharray={2 * Math.PI * 24}
+                strokeDashoffset={2 * Math.PI * 24 - (matchScore / 100) * (2 * Math.PI * 24)}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="flex flex-col items-center justify-center text-center">
+              <span className="text-xs font-number font-extrabold text-primary leading-none">{matchScore}%</span>
+              <span className="text-[6px] text-[#4CAF50] font-sans font-bold uppercase tracking-wider mt-0.5 leading-none">Match</span>
+            </div>
           </div>
         </div>
 
-        {/* Title and stats */}
+        {/* Title */}
         <div>
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-base font-heading font-extrabold text-primary leading-snug">
-              {career.title}
-            </h3>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-[rgba(76,175,80,0.12)] text-[#4CAF50] border border-[rgba(76,175,80,0.15)] shrink-0 animate-pulse">
-              {matchScore}% Fit
-            </span>
+          <h3 className="text-base font-heading font-extrabold text-primary leading-snug">
+            {career.title}
+          </h3>
+        </div>
+
+        {/* Horizontal Metadata Box */}
+        <div className="grid grid-cols-3 gap-1 divide-x divide-[rgba(0,0,0,0.08)] dark:divide-[rgba(225,220,201,0.08)] border border-[rgba(0,0,0,0.06)] dark:border-[rgba(225,220,201,0.06)] bg-[#F1EEDD]/20 dark:bg-[#1F150C]/10 rounded-xl p-2.5 text-center">
+          {/* Column 1: Growth */}
+          <div className="flex flex-col items-center justify-center px-1">
+            <div className="flex items-center gap-1 text-[#4CAF50] font-sans font-bold text-[10px]">
+              <span className="p-0.5 bg-[rgba(76,175,80,0.12)] rounded-full text-[#4CAF50] flex-shrink-0">
+                <TrendingUp size={9} />
+              </span>
+              <span>{career.growthOutlook === "High" ? "High Growth" : career.growthOutlook === "Medium" ? "Medium Growth" : "Stable Growth"}</span>
+            </div>
+            <span className="text-[8px] text-muted font-sans font-medium mt-0.5">{career.growthOutlook === "High" ? "Top career opportunity" : "Steady demand"}</span>
           </div>
-          
-          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-            <GrowthBadge value={career.growthOutlook} />
-            <Badge tone="slate" className="font-sans font-bold text-[9px]">{career.salaryRange}</Badge>
+
+          {/* Column 2: Salary */}
+          <div className="flex flex-col items-center justify-center px-1">
+            <div className="flex items-center gap-1 text-primary font-sans font-bold text-[10px]">
+              <span className="p-0.5 bg-[rgba(225,220,201,0.12)] dark:bg-[rgba(225,220,201,0.05)] rounded-full text-secondary flex-shrink-0">
+                <Wallet size={9} />
+              </span>
+              <span>{career.salaryRange}</span>
+            </div>
+            <span className="text-[8px] text-muted font-sans font-medium mt-0.5">Estimated Salary</span>
+          </div>
+
+          {/* Column 3: Demand */}
+          <div className="flex flex-col items-center justify-center px-1">
+            <div className="flex items-center gap-1 text-indigo-500 dark:text-[#6C8EFF] font-sans font-bold text-[10px]">
+              <span className="p-0.5 bg-[rgba(108,142,255,0.12)] rounded-full text-indigo-500 dark:text-[#6C8EFF] flex-shrink-0">
+                <LineChart size={9} />
+              </span>
+              <span>
+                {career.projectedDemand ? `${career.projectedDemand.match(/\d+%/)?.[0] || "25%"}` : "25%"} Demand
+              </span>
+            </div>
+            <span className="text-[8px] text-muted font-sans font-medium mt-0.5">Projected by 2030</span>
           </div>
         </div>
 
-        <p className="line-clamp-2 text-xs text-secondary leading-relaxed">
+        <p className="line-clamp-2 text-xs text-secondary leading-relaxed mt-3">
           {career.description}
         </p>
 
         {/* Why it matches */}
-        <div className="bg-[#F1EEDD]/70 dark:bg-[#1F150C]/60 p-2.5 rounded-xl border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.06)] text-[11px]">
-          <span className="font-sans font-bold text-secondary dark:text-[rgba(225,220,201,0.4)] text-[9px] uppercase tracking-wide">Why Recommended</span>
-          <p className="text-primary dark:text-[rgba(225,220,201,0.85)] mt-0.5 leading-normal">
-            {career.matchExplanation || "Matches your academic preferences and industry interest vectors."}
-          </p>
+        <div className="bg-[rgba(76,175,80,0.03)] dark:bg-[rgba(76,175,80,0.02)] p-3 rounded-xl border border-[rgba(76,175,80,0.15)] dark:border-[rgba(76,175,80,0.08)] text-[11px] space-y-2 mt-3">
+          <div className="flex items-center gap-1.5 text-[#4CAF50] font-sans font-bold text-[11px]">
+            <User size={13} className="text-[#4CAF50]" />
+            <span>Why it's a match</span>
+          </div>
+          <div className="grid grid-cols-1 gap-1.5 text-secondary dark:text-[rgba(225,220,201,0.85)] leading-normal pl-0.5">
+            {matchPoints.map((point, idx) => (
+              <div key={idx} className="flex items-start gap-1.5">
+                <span className="p-0.5 bg-[rgba(76,175,80,0.12)] text-[#4CAF50] rounded-full mt-0.5 flex-shrink-0">
+                  <Check size={8} strokeWidth={3} />
+                </span>
+                <span>{point}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         <Separator />
 
-        {/* Details snippet */}
-        <div className="space-y-1">
-          <p className="text-[9px] font-sans font-bold text-muted uppercase tracking-widest">Leading Majors</p>
-          <div className="flex flex-wrap gap-1">
+        {/* Related Majors */}
+        <div className="space-y-1.5 mt-3">
+          <p className="text-xs font-sans font-bold text-primary">Related Majors</p>
+          <div className="flex flex-wrap gap-1.5">
             {career.relatedMajors.slice(0, 2).map((major) => (
-              <Badge key={major} tone="slate" className="text-[9px] font-bold py-0.5 px-2">
+              <span 
+                key={major} 
+                className="border border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(225,220,201,0.02)] text-secondary px-3 py-1 rounded-xl text-[10px] font-sans font-medium"
+              >
                 {major}
-              </Badge>
+              </span>
             ))}
             {career.relatedMajors.length > 2 && (
-              <span className="text-[9px] text-muted font-bold ml-1">+{career.relatedMajors.length - 2} more</span>
+              <span className="border border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] bg-[rgba(0,0,0,0.02)] dark:bg-[rgba(225,220,201,0.02)] text-muted px-3 py-1 rounded-xl text-[10px] font-sans font-bold">
+                +{career.relatedMajors.length - 2} more
+              </span>
             )}
           </div>
         </div>
       </div>
 
+      {/* Footer */}
       <div className="flex items-center justify-between pt-3 mt-4 border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.06)]">
-        <span className="text-[10px] text-muted font-sans font-semibold">
-          Demand: {career.projectedDemand ? career.projectedDemand.split(" ").slice(0, 2).join(" ") : "Growing"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="p-2 bg-[rgba(0,0,0,0.03)] dark:bg-[rgba(225,220,201,0.03)] rounded-lg text-secondary border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]">
+            <LineChart size={14} className="text-indigo-500 dark:text-[#6C8EFF]" />
+          </span>
+          <div className="flex flex-col text-left">
+            <span className="text-xs font-sans font-bold text-primary">
+              Demand: {career.projectedDemand ? career.projectedDemand.split(" ").slice(0, 2).join(" ") : "25% growth"}
+            </span>
+            <span className="text-[9px] text-muted font-sans font-medium">
+              High future opportunity
+            </span>
+          </div>
+        </div>
+
         <button 
           onClick={(e) => {
             e.stopPropagation();
             if (onSelect) onSelect();
           }}
-          className="text-xs font-sans font-bold text-[#4C43CD] hover:text-[#3930B8] dark:text-[#E1DCC9] dark:hover:text-[#FFFFFF] flex items-center gap-1 transition-colors duration-150"
+          className="h-8 px-4 bg-[#4C43CD] hover:bg-[#3930B8] text-white dark:bg-[#412D15] dark:hover:bg-[#5A3B19] dark:text-[#E1DCC9] border border-[#4C43CD] dark:border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl transition-all duration-200 flex items-center gap-1 shadow-sm"
         >
-          View Career Path <ArrowRight size={13} />
+          <span>Explore Career Path</span>
+          <ArrowRight size={13} />
         </button>
       </div>
     </Card>
