@@ -265,9 +265,9 @@ export function CollegeExplorer() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-3 text-[rgba(225,220,201,0.4)]" size={16} />
+              <Search className="absolute left-3.5 top-3 text-muted" size={16} />
               <Input
-                className="pl-10 h-10 bg-[#111111] border-[rgba(225,220,201,0.08)] text-[#FFFFFF] focus:border-[#412D15]"
+                className="pl-10 h-10 bg-transparent dark:bg-[#111111]"
                 placeholder="Search colleges by name, location, or major..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -275,7 +275,7 @@ export function CollegeExplorer() {
               {search && (
                 <button
                   type="button"
-                  className="absolute right-3 top-3 text-[rgba(225,220,201,0.5)] hover:text-[#FFFFFF] transition-colors"
+                  className="absolute right-3 top-3 text-muted hover:text-primary transition-colors"
                   onClick={() => setSearch("")}
                 >
                   <X size={15} />
@@ -285,11 +285,11 @@ export function CollegeExplorer() {
 
             <div className="flex items-center gap-3 shrink-0">
               <div className="flex items-center gap-2">
-                <label className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest whitespace-nowrap">Sort By</label>
+                <label className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest whitespace-nowrap">Sort By</label>
                 <Select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="h-10 bg-[#111111] border-[rgba(225,220,201,0.08)] text-[#FFFFFF] text-xs"
+                  className="h-10 text-xs w-44 bg-transparent dark:bg-[#111111]"
                 >
                   <option value="Fit Score">Fit Match Score</option>
                   <option value="Acceptance Rate">Acceptance Rate</option>
@@ -305,27 +305,27 @@ export function CollegeExplorer() {
                   className={cn(
                     "h-10 px-4 rounded-xl text-xs font-sans font-bold transition-all duration-150 flex items-center gap-2 border",
                     showFilters || activeFiltersCount > 0
-                      ? "bg-[#1F150C] text-[#FFFFFF] border-[rgba(225,220,201,0.2)] shadow-md"
-                      : "bg-[#111111] text-[#E1DCC9] border-[rgba(225,220,201,0.08)] hover:bg-[#1A1A1A]"
+                      ? "bg-[#4C43CD]/10 text-[#4C43CD] border-[#4C43CD]/20 dark:bg-[#1F150C] dark:text-[#FFFFFF] dark:border-[rgba(225,220,201,0.2)] shadow-sm"
+                      : "bg-[#FBFAF2] text-secondary border-[rgba(0,0,0,0.08)] hover:bg-[#F1EEDD] dark:bg-[#111111] dark:text-[#E1DCC9] dark:border-[rgba(225,220,201,0.08)] dark:hover:bg-[#1A1A1A]"
                   )}
                 >
                   <SlidersHorizontal size={14} />
                   <span>Filters</span>
                   {activeFiltersCount > 0 && (
-                    <span className="grid place-items-center size-5 rounded-full bg-[#412D15] border border-[rgba(225,220,201,0.15)] text-[9px] font-bold text-[#E1DCC9]">
+                    <span className="grid place-items-center size-5 rounded-full bg-[#4C43CD] dark:bg-[#412D15] border border-[rgba(76,67,205,0.15)] dark:border-[rgba(225,220,201,0.15)] text-[9px] font-bold text-white dark:text-[#E1DCC9]">
                       {activeFiltersCount}
                     </span>
                   )}
                 </button>
 
                 {showFilters && (
-                  <div className="absolute right-0 mt-2 w-72 bg-[#111111] border border-[rgba(225,220,201,0.08)] p-5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.6)] z-50 space-y-5 text-left">
-                    <div className="flex items-center justify-between pb-3 border-b border-[rgba(225,220,201,0.08)]">
-                      <span className="font-heading font-extrabold text-[#F5F2EA] text-xs uppercase tracking-wider">
+                  <div className="absolute right-0 mt-2 w-72 bg-[#FBFAF2] dark:bg-[#111111] border border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] p-5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0px_8px_32px_rgba(0,0,0,0.6)] z-50 space-y-5 text-left">
+                    <div className="flex items-center justify-between pb-3 border-b border-[rgba(0,0,0,0.08)] dark:border-b-[rgba(225,220,201,0.08)]">
+                      <span className="font-heading font-extrabold text-primary text-xs uppercase tracking-wider">
                         Advanced Filters
                       </span>
                       <button
-                        className="text-[10px] text-[rgba(225,220,201,0.5)] hover:text-[#FFFFFF] font-bold uppercase tracking-wider transition-colors"
+                        className="text-[10px] text-muted hover:text-primary font-bold uppercase tracking-wider transition-colors"
                         onClick={clearFilters}
                       >
                         Clear All
@@ -333,11 +333,11 @@ export function CollegeExplorer() {
                     </div>
 
                     <div className="space-y-2 text-left">
-                      <label className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block">Location (State)</label>
+                      <label className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest block">Location (State)</label>
                       <Select 
                         value={state} 
                         onChange={(e) => setState(e.target.value)}
-                        className="bg-[#111111] border-[rgba(225,220,201,0.08)] text-[#FFFFFF] h-9 text-xs w-full"
+                        className="h-9 text-xs w-full"
                       >
                         <option value="All">All States</option>
                         {states.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -345,15 +345,15 @@ export function CollegeExplorer() {
                     </div>
 
                     <div className="space-y-2 text-left">
-                      <label className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block mb-1">College Type</label>
+                      <label className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest block mb-1">College Type</label>
                       <div className="space-y-2">
                         {["Public", "Private"].map((t) => (
-                          <label key={t} className="flex items-center gap-2.5 text-xs text-[rgba(225,220,201,0.75)] font-medium cursor-pointer">
+                          <label key={t} className="flex items-center gap-2.5 text-xs text-secondary font-medium cursor-pointer">
                             <input
                               type="checkbox"
                               checked={selectedTypes.includes(t)}
                               onChange={() => toggleType(t)}
-                              className="rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#E1DCC9] focus:ring-0 focus:ring-offset-0 size-4 cursor-pointer"
+                              className="rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#4C43CD] dark:text-[#E1DCC9] focus:ring-0 focus:ring-offset-0 size-4 cursor-pointer"
                             />
                             {t}
                           </label>
@@ -362,9 +362,9 @@ export function CollegeExplorer() {
                     </div>
 
                     <div className="space-y-2 text-left">
-                      <div className="flex justify-between text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest">
+                      <div className="flex justify-between text-[10px] font-sans font-bold text-muted uppercase tracking-widest">
                         <span>Acceptance Rate</span>
-                        <span className="text-[#E1DCC9] font-number font-bold">≤ {maxAcceptanceRate}%</span>
+                        <span className="text-primary font-number font-bold">≤ {maxAcceptanceRate}%</span>
                       </div>
                       <input
                         type="range"
@@ -373,14 +373,14 @@ export function CollegeExplorer() {
                         step="1"
                         value={maxAcceptanceRate}
                         onChange={(e) => setMaxAcceptanceRate(Number(e.target.value))}
-                        className="w-full h-1.5 bg-[#1A1A1A] rounded-lg appearance-none cursor-pointer accent-[#E1DCC9] border border-[rgba(225,220,201,0.04)]"
+                        className="w-full h-1.5 bg-[#F1EEDD] dark:bg-[#1A1A1A] rounded-lg appearance-none cursor-pointer accent-[#4C43CD] dark:accent-[#E1DCC9] border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]"
                       />
                     </div>
 
                     <div className="space-y-2 text-left">
-                      <div className="flex justify-between text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest">
+                      <div className="flex justify-between text-[10px] font-sans font-bold text-muted uppercase tracking-widest">
                         <span>Max Cost / Yr</span>
-                        <span className="text-[#E1DCC9] font-number font-bold">{formatMoney(maxCost)}</span>
+                        <span className="text-primary font-number font-bold">{formatMoney(maxCost)}</span>
                       </div>
                       <input
                         type="range"
@@ -389,24 +389,24 @@ export function CollegeExplorer() {
                         step="25000"
                         value={maxCost}
                         onChange={(e) => setMaxCost(Number(e.target.value))}
-                        className="w-full h-1.5 bg-[#1A1A1A] rounded-lg appearance-none cursor-pointer accent-[#E1DCC9] border border-[rgba(225,220,201,0.04)]"
+                        className="w-full h-1.5 bg-[#F1EEDD] dark:bg-[#1A1A1A] rounded-lg appearance-none cursor-pointer accent-[#4C43CD] dark:accent-[#E1DCC9] border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]"
                       />
                     </div>
 
                     <div className="space-y-2 text-left">
-                      <label className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block mb-1">Campus Size</label>
+                      <label className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest block mb-1">Campus Size</label>
                       <div className="space-y-2">
                         {[
                           { name: "Small", label: "Small (< 5k)" },
                           { name: "Medium", label: "Medium (5k - 15k)" },
                           { name: "Large", label: "Large (> 15k)" }
                         ].map((sz) => (
-                          <label key={sz.name} className="flex items-center gap-2.5 text-xs text-[rgba(225,220,201,0.75)] font-medium cursor-pointer">
+                          <label key={sz.name} className="flex items-center gap-2.5 text-xs text-secondary font-medium cursor-pointer">
                             <input
                               type="checkbox"
                               checked={selectedSizes.includes(sz.name)}
                               onChange={() => toggleSize(sz.name)}
-                              className="rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#E1DCC9] focus:ring-0 focus:ring-offset-0 size-4 cursor-pointer"
+                              className="rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#4C43CD] dark:text-[#E1DCC9] focus:ring-0 focus:ring-offset-0 size-4 cursor-pointer"
                             />
                             {sz.label}
                           </label>
@@ -414,12 +414,12 @@ export function CollegeExplorer() {
                       </div>
                     </div>
 
-                    <div className="space-y-2 text-left pt-2 border-t border-[rgba(225,220,201,0.08)]">
-                      <label className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest block">Top Majors</label>
+                    <div className="space-y-2 text-left pt-2 border-t border-[rgba(0,0,0,0.08)] dark:border-t-[rgba(225,220,201,0.08)]">
+                      <label className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest block">Top Majors</label>
                       <Select 
                         value={selectedMajor} 
                         onChange={(e) => setSelectedMajor(e.target.value)}
-                        className="bg-[#111111] border-[rgba(225,220,201,0.08)] text-[#FFFFFF] h-9 text-xs w-full"
+                        className="h-9 text-xs w-full"
                       >
                         <option value="All">All Majors</option>
                         {allMajors.map((m) => <option key={m} value={m}>{m}</option>)}
@@ -435,8 +435,8 @@ export function CollegeExplorer() {
                 className={cn(
                   "h-10 px-4 rounded-xl text-xs font-sans font-bold transition-all duration-150 flex items-center gap-1.5 border",
                   showDrawer
-                    ? "bg-[#5A3B19] text-[#FFFFFF] border-[#6A4520] shadow-md"
-                    : "bg-[#412D15] text-[#E1DCC9] border-[rgba(225,220,201,0.08)] hover:bg-[#5A3B19] hover:text-[#FFFFFF]"
+                    ? "bg-[#3930B8] text-white border-[#3930B8] dark:bg-[#5A3B19] dark:text-[#FFFFFF] dark:border-[#6A4520] shadow-md"
+                    : "bg-[#4C43CD] text-white hover:bg-[#3930B8] border-[#4C43CD] dark:bg-[#412D15] dark:text-[#E1DCC9] dark:border-[rgba(225,220,201,0.08)] dark:hover:bg-[#5A3B19] dark:hover:text-[#FFFFFF]"
                 )}
               >
                 <Sparkles size={14} className="text-[#D4A017]" />
@@ -446,7 +446,7 @@ export function CollegeExplorer() {
           </div>
 
           {/* Results count */}
-          <div className="flex items-center justify-between pb-2 text-xs font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-wider pl-1">
+          <div className="flex items-center justify-between pb-2 text-xs font-sans font-bold text-muted uppercase tracking-wider pl-1">
             <span>Found {sorted.length} colleges</span>
           </div>
 
@@ -465,15 +465,15 @@ export function CollegeExplorer() {
               ))}
             </div>
           ) : (
-            <Card className="grid place-items-center gap-4 p-12 text-center border-dashed border-2 border-[rgba(225,220,201,0.08)] bg-[#111111]">
-              <span className="grid size-14 place-items-center rounded-lg bg-[#1F150C] text-[rgba(225,220,201,0.4)]">
+            <Card className="grid place-items-center gap-4 p-12 text-center border-dashed border-2 border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] bg-transparent">
+              <span className="grid size-14 place-items-center rounded-lg bg-[#F1EEDD] dark:bg-[#1F150C] text-muted">
                 <Search size={24} />
               </span>
               <div>
-                <h3 className="text-lg font-heading font-extrabold text-[#F5F2EA]">No colleges match your filters</h3>
-                <p className="text-xs text-[rgba(225,220,201,0.65)] font-sans mt-1">Try relaxing your cost limits or checking different locations.</p>
+                <h3 className="text-lg font-heading font-extrabold text-primary">No colleges match your filters</h3>
+                <p className="text-xs text-secondary font-sans mt-1">Try relaxing your cost limits or checking different locations.</p>
               </div>
-              <Button onClick={clearFilters} className="bg-[#412D15] text-[#E1DCC9] hover:bg-[#523A1D]">Reset Filters</Button>
+              <Button onClick={clearFilters} className="bg-[#4C43CD] dark:bg-[#412D15] text-white hover:bg-[#3930B8] dark:hover:bg-[#523A1D]">Reset Filters</Button>
             </Card>
           )}
         </div>
@@ -493,21 +493,21 @@ export function CollegeExplorer() {
           {/* Slide-over Drawer Panel */}
           <div 
             className={cn(
-              "fixed inset-y-0 right-0 z-50 w-[420px] bg-[#111111] border-l border-[rgba(225,220,201,0.08)] shadow-[0px_0px_48px_rgba(0,0,0,0.8)] transform transition-transform duration-300 ease-in-out flex flex-col justify-between text-left",
+              "fixed inset-y-0 right-0 z-50 w-[420px] bg-[#FBFAF2] dark:bg-[#111111] border-l border-[rgba(0,0,0,0.08)] dark:border-l-[rgba(225,220,201,0.08)] shadow-[0px_0px_48px_rgba(0,0,0,0.15)] dark:shadow-[0px_0px_48px_rgba(0,0,0,0.8)] transform transition-transform duration-300 ease-in-out flex flex-col justify-between text-left",
               showDrawer ? "translate-x-0" : "translate-x-full invisible pointer-events-none"
             )}
           >
             {selectedCollege && fitScoreDetails ? (
               <>
                 {/* Drawer Header */}
-                <div className="p-4 bg-[#1F150C] border-b border-[rgba(225,220,201,0.08)] flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-[#E1DCC9]">
+                <div className="p-4 bg-[#F1EEDD] dark:bg-[#1F150C] border-b border-[rgba(0,0,0,0.08)] dark:border-b-[rgba(225,220,201,0.08)] flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-primary">
                     <Sparkles size={16} className="text-[#D4A017]" />
                     <span className="font-heading font-extrabold text-xs uppercase tracking-wider">AI Fit Intelligence</span>
                   </div>
                   <button 
                     onClick={() => setShowDrawer(false)}
-                    className="size-7 rounded-lg border border-[rgba(225,220,201,0.08)] text-[rgba(225,220,201,0.6)] hover:bg-[#1A1A1A] hover:text-[#FFFFFF] flex items-center justify-center transition-all duration-150"
+                    className="size-7 rounded-lg border border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] text-secondary dark:text-[rgba(225,220,201,0.6)] hover:bg-[#F1EEDD] dark:hover:bg-[#1A1A1A] hover:text-primary dark:hover:text-[#FFFFFF] flex items-center justify-center transition-all duration-150"
                   >
                     <X size={14} />
                   </button>
@@ -517,21 +517,21 @@ export function CollegeExplorer() {
                 <div className="flex-1 overflow-y-auto p-5 space-y-6">
                   {/* College basic info */}
                   <div>
-                    <h3 className="font-heading font-extrabold text-white text-base leading-snug">{selectedCollege.name}</h3>
-                    <p className="text-xs text-[rgba(225,220,201,0.6)] font-sans font-semibold flex items-center gap-1 mt-0.5">
-                      <MapPin size={11} className="text-[rgba(225,220,201,0.4)]" /> {selectedCollege.city}, {selectedCollege.state}
+                    <h3 className="font-heading font-extrabold text-primary text-base leading-snug">{selectedCollege.name}</h3>
+                    <p className="text-xs text-secondary font-sans font-semibold flex items-center gap-1 mt-0.5">
+                      <MapPin size={11} className="text-muted" /> {selectedCollege.city}, {selectedCollege.state}
                     </p>
                   </div>
 
                   {/* Admission Outlook */}
-                  <div className="space-y-3 pt-3 border-t border-[rgba(225,220,201,0.08)]">
-                    <h4 className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.45)] uppercase tracking-widest">
+                  <div className="space-y-3 pt-3 border-t border-[rgba(0,0,0,0.08)] dark:border-t-[rgba(225,220,201,0.08)]">
+                    <h4 className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest">
                       Your Admission Outlook
                     </h4>
 
                     <div className="relative size-24 mx-auto my-3 shrink-0">
                       <svg className="size-full -rotate-90">
-                        <circle cx="48" cy="48" r="38" className="stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="6" />
+                        <circle cx="48" cy="48" r="38" className="stroke-[rgba(0,0,0,0.08)] dark:stroke-[rgba(225,220,201,0.08)] fill-none" strokeWidth="6" />
                         <circle
                           cx="48"
                           cy="48"
@@ -544,10 +544,10 @@ export function CollegeExplorer() {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xl font-number font-extrabold text-[#FFFFFF]">
+                        <span className="text-xl font-number font-extrabold text-primary">
                           {fitScoreDetails.fitScore}
                         </span>
-                        <span className="text-[7px] text-[rgba(225,220,201,0.5)] font-sans font-semibold uppercase tracking-wider">
+                        <span className="text-[7px] text-muted font-sans font-semibold uppercase tracking-wider">
                           / 100 Fit
                         </span>
                       </div>
@@ -555,64 +555,64 @@ export function CollegeExplorer() {
 
                     <div className="space-y-2 pt-1 font-sans text-xs">
                       <div className="flex justify-between items-center">
-                        <span className="text-[rgba(225,220,201,0.6)] font-semibold">Academic Fit</span>
+                        <span className="text-secondary font-semibold">Academic Fit</span>
                         <span className="font-bold text-[#4CAF50]">{fitScoreDetails.academicFit}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[rgba(225,220,201,0.6)] font-semibold">Financial Fit</span>
+                        <span className="text-secondary font-semibold">Financial Fit</span>
                         <span className="font-bold text-[#D4A017]">{fitScoreDetails.financialFit}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[rgba(225,220,201,0.6)] font-semibold">Competition Level</span>
+                        <span className="text-secondary font-semibold">Competition Level</span>
                         <span className="font-bold text-[#D4A017]">{fitScoreDetails.competitionLevel}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-[rgba(225,220,201,0.6)] font-semibold">Recommendation</span>
+                        <span className="text-secondary font-semibold">Recommendation</span>
                         <span className="font-bold text-[#4CAF50]">{fitScoreDetails.recommendation}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Top Strength Factors */}
-                  <div className="space-y-3 pt-4 border-t border-[rgba(225,220,201,0.08)]">
-                    <h4 className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.45)] uppercase tracking-widest">
+                  <div className="space-y-3 pt-4 border-t border-[rgba(0,0,0,0.08)] dark:border-t-[rgba(225,220,201,0.08)]">
+                    <h4 className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest">
                       Top Strength Factors
                     </h4>
 
                     <div className="space-y-2.5 font-sans">
                       <div>
                         <div className="flex justify-between items-center text-[10px] mb-1">
-                          <span className="text-[rgba(225,220,201,0.7)]">GPA & Academics</span>
-                          <span className="font-number font-extrabold text-[#FFFFFF]">{fitScoreDetails.scoreGpa} / 10</span>
+                          <span className="text-secondary font-semibold">GPA & Academics</span>
+                          <span className="font-number font-extrabold text-primary">{fitScoreDetails.scoreGpa} / 10</span>
                         </div>
-                        <div className="h-1.5 w-full bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(225,220,201,0.04)]">
+                        <div className="h-1.5 w-full bg-[#F1EEDD] dark:bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]">
                           <div className="h-full bg-[#4CAF50]" style={{ width: `${Number(fitScoreDetails.scoreGpa) * 10}%` }} />
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between items-center text-[10px] mb-1">
-                          <span className="text-[rgba(225,220,201,0.7)]">Coding & Projects</span>
-                          <span className="font-number font-extrabold text-[#FFFFFF]">{fitScoreDetails.scoreCoding} / 10</span>
+                          <span className="text-secondary font-semibold">Coding & Projects</span>
+                          <span className="font-number font-extrabold text-primary">{fitScoreDetails.scoreCoding} / 10</span>
                         </div>
-                        <div className="h-1.5 w-full bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(225,220,201,0.04)]">
+                        <div className="h-1.5 w-full bg-[#F1EEDD] dark:bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]">
                           <div className="h-full bg-[#4CAF50]" style={{ width: `${Number(fitScoreDetails.scoreCoding) * 10}%` }} />
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between items-center text-[10px] mb-1">
-                          <span className="text-[rgba(225,220,201,0.7)]">Extracurriculars</span>
-                          <span className="font-number font-extrabold text-[#FFFFFF]">{fitScoreDetails.scoreExtracurriculars} / 10</span>
+                          <span className="text-secondary font-semibold">Extracurriculars</span>
+                          <span className="font-number font-extrabold text-primary">{fitScoreDetails.scoreExtracurriculars} / 10</span>
                         </div>
-                        <div className="h-1.5 w-full bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(225,220,201,0.04)]">
+                        <div className="h-1.5 w-full bg-[#F1EEDD] dark:bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]">
                           <div className="h-full bg-[#D4A017]" style={{ width: `${Number(fitScoreDetails.scoreExtracurriculars) * 10}%` }} />
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between items-center text-[10px] mb-1">
-                          <span className="text-[rgba(225,220,201,0.7)]">Leadership</span>
-                          <span className="font-number font-extrabold text-[#FFFFFF]">{fitScoreDetails.scoreLeadership} / 10</span>
+                          <span className="text-secondary font-semibold">Leadership</span>
+                          <span className="font-number font-extrabold text-primary">{fitScoreDetails.scoreLeadership} / 10</span>
                         </div>
-                        <div className="h-1.5 w-full bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(225,220,201,0.04)]">
+                        <div className="h-1.5 w-full bg-[#F1EEDD] dark:bg-[#1A1A1A] rounded-full overflow-hidden border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.04)]">
                           <div className="h-full bg-[#D4A017]" style={{ width: `${Number(fitScoreDetails.scoreLeadership) * 10}%` }} />
                         </div>
                       </div>
@@ -620,56 +620,56 @@ export function CollegeExplorer() {
                   </div>
 
                   {/* Scholarship Chances */}
-                  <div className="space-y-3 pt-4 border-t border-[rgba(225,220,201,0.08)]">
-                    <h4 className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.45)] uppercase tracking-widest">
+                  <div className="space-y-3 pt-4 border-t border-[rgba(0,0,0,0.08)] dark:border-t-[rgba(225,220,201,0.08)]">
+                    <h4 className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest">
                       Scholarship Chances
                     </h4>
-                    <div className="p-3 bg-[#1F150C]/40 border border-[rgba(225,220,201,0.06)] rounded-xl text-xs leading-relaxed text-[rgba(225,220,201,0.85)] font-sans">
+                    <div className="p-3 bg-[#F1EEDD]/40 dark:bg-[#1F150C]/40 border border-[rgba(0,0,0,0.06)] dark:border-[rgba(225,220,201,0.06)] rounded-xl text-xs leading-relaxed text-secondary dark:text-[rgba(225,220,201,0.85)] font-sans">
                       {selectedCollege.scholarships || "No institutional scholarships configured. Verify other general government financial aid paths."}
                     </div>
                   </div>
 
                   {/* Recommended Actions */}
-                  <div className="space-y-3 pt-4 border-t border-[rgba(225,220,201,0.08)]">
-                    <h4 className="text-[10px] font-sans font-bold text-[rgba(225,220,201,0.45)] uppercase tracking-widest">
+                  <div className="space-y-3 pt-4 border-t border-[rgba(0,0,0,0.08)] dark:border-t-[rgba(225,220,201,0.08)]">
+                    <h4 className="text-[10px] font-sans font-bold text-muted uppercase tracking-widest">
                       Recommended Actions
                     </h4>
                     <div className="space-y-2 text-xs font-sans">
                       {fitScoreDetails.recommendation === "Apply Early" ? (
                         <>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly checked className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Submit early application before Nov 1.</span>
+                            <input type="checkbox" readOnly checked className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Submit early application before Nov 1.</span>
                           </div>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly checked className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Request counselor recommendations.</span>
+                            <input type="checkbox" readOnly checked className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Request counselor recommendations.</span>
                           </div>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Polish supplemental program essay prompt.</span>
+                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Polish supplemental program essay prompt.</span>
                           </div>
                         </>
                       ) : fitScoreDetails.recommendation === "Reach School" ? (
                         <>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Retake standardized tests to boost scores.</span>
+                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Retake standardized tests to boost scores.</span>
                           </div>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Highlight technical portfolio or coding leadership.</span>
+                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Highlight technical portfolio or coding leadership.</span>
                           </div>
                         </>
                       ) : (
                         <>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Organize mock interview and plan campus visit.</span>
+                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Organize mock interview and plan campus visit.</span>
                           </div>
                           <div className="flex items-start gap-2.5">
-                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(225,220,201,0.15)] bg-[#111111] text-[#D4A017] focus:ring-0" />
-                            <span className="text-[rgba(225,220,201,0.8)]">Draft generic application checklist.</span>
+                            <input type="checkbox" readOnly className="mt-0.5 rounded border-[rgba(0,0,0,0.15)] dark:border-[rgba(225,220,201,0.15)] bg-[#FBFAF2] dark:bg-[#111111] text-[#D4A017] focus:ring-0" />
+                            <span className="text-secondary">Draft generic application checklist.</span>
                           </div>
                         </>
                       )}
@@ -678,16 +678,16 @@ export function CollegeExplorer() {
                 </div>
 
                 {/* Drawer Footer Actions */}
-                <div className="p-4 bg-[#111111] border-t border-[rgba(225,220,201,0.08)] flex gap-3">
+                <div className="p-4 bg-[#FBFAF2] dark:bg-[#111111] border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] flex gap-3">
                   <button 
                     onClick={() => navigate(`/colleges/${selectedCollege.id}`)}
-                    className="flex-1 py-2 bg-[#412D15] hover:bg-[#5A3B19] text-[#E1DCC9] border border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl transition-all duration-200 text-center"
+                    className="flex-1 py-2 bg-[#4C43CD] hover:bg-[#3930B8] text-white dark:bg-[#412D15] dark:hover:bg-[#5A3B19] dark:text-[#E1DCC9] border border-[#4C43CD] dark:border-[rgba(225,220,201,0.08)] font-sans font-bold text-xs rounded-xl transition-all duration-200 text-center"
                   >
                     View Detailed Analysis &rarr;
                   </button>
                   <button 
                     onClick={() => toggleSaved(profile, saveProfile, selectedCollege.id)}
-                    className="px-4 py-2 border border-[rgba(225,220,201,0.08)] hover:bg-[#1A1A1A] font-sans font-bold text-xs text-[#E1DCC9] rounded-xl transition-all duration-200"
+                    className="px-4 py-2 border border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] hover:bg-[#F1EEDD] dark:hover:bg-[#1A1A1A] font-sans font-bold text-xs text-secondary dark:text-[#E1DCC9] hover:text-primary dark:hover:text-white rounded-xl transition-all duration-200"
                   >
                     {profile?.savedColleges?.includes(selectedCollege.id) ? "Saved" : "Save"}
                   </button>
