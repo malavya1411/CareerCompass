@@ -55,7 +55,7 @@ export function CareerCard({
     <Card 
       onClick={onSelect}
       className={cn(
-        "flex flex-col justify-between h-full p-5 border-l-4 cursor-pointer text-left relative transition-all duration-200 hover:border-r hover:border-t hover:border-b hover:border-[rgba(225,220,201,0.12)]",
+        "flex flex-col justify-between h-full p-5 border-l-4 cursor-pointer text-left relative transition-all duration-200 hover:border-[rgba(76,67,205,0.22)] dark:hover:border-[rgba(225,220,201,0.12)]",
         cardColors
       )}
     >
@@ -73,7 +73,7 @@ export function CareerCard({
             )}>
               <BriefcaseBusiness size={16} />
             </span>
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-[rgba(225,220,201,0.5)]">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-muted">
               {career.category}
             </span>
           </div>
@@ -81,7 +81,7 @@ export function CareerCard({
           <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
-              className={cn("size-8 p-0 rounded-full", isComparing ? "bg-[#1F150C] text-[#FFFFFF]" : "text-[rgba(225,220,201,0.6)] hover:bg-[#1A1A1A]")}
+              className={cn("size-8 p-0 rounded-full", isComparing ? "bg-[#4C43CD] dark:bg-[#1F150C] text-white" : "text-secondary hover:bg-[#F1EEDD] dark:hover:bg-[#1A1A1A]")}
               onClick={onCompareToggle}
               title="Compare Career"
             >
@@ -93,7 +93,7 @@ export function CareerCard({
               onClick={handleSaveToggle}
               title="Save Career Category"
             >
-              <Heart size={15} className={cn("transition-all", saved ? "fill-[#C94A4A] text-[#C94A4A] scale-110" : "text-[rgba(225,220,201,0.6)]")} />
+              <Heart size={15} className={cn("transition-all", saved ? "fill-[#C94A4A] text-[#C94A4A] scale-110" : "text-secondary")} />
             </Button>
           </div>
         </div>
@@ -101,7 +101,7 @@ export function CareerCard({
         {/* Title and stats */}
         <div>
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-base font-heading font-extrabold text-[#F5F2EA] leading-snug">
+            <h3 className="text-base font-heading font-extrabold text-primary leading-snug">
               {career.title}
             </h3>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-[rgba(76,175,80,0.12)] text-[#4CAF50] border border-[rgba(76,175,80,0.15)] shrink-0 animate-pulse">
@@ -115,23 +115,23 @@ export function CareerCard({
           </div>
         </div>
 
-        <p className="line-clamp-2 text-xs text-[rgba(225,220,201,0.65)] leading-relaxed">
+        <p className="line-clamp-2 text-xs text-secondary leading-relaxed">
           {career.description}
         </p>
 
         {/* Why it matches */}
-        <div className="bg-[#1F150C]/60 p-2.5 rounded-xl border border-[rgba(225,220,201,0.06)] text-[11px]">
-          <span className="font-sans font-bold text-[rgba(225,220,201,0.4)] text-[9px] uppercase tracking-wide">Why Recommended</span>
-          <p className="text-[rgba(225,220,201,0.85)] mt-0.5 leading-normal">
+        <div className="bg-[#F1EEDD]/70 dark:bg-[#1F150C]/60 p-2.5 rounded-xl border border-[rgba(0,0,0,0.04)] dark:border-[rgba(225,220,201,0.06)] text-[11px]">
+          <span className="font-sans font-bold text-secondary dark:text-[rgba(225,220,201,0.4)] text-[9px] uppercase tracking-wide">Why Recommended</span>
+          <p className="text-primary dark:text-[rgba(225,220,201,0.85)] mt-0.5 leading-normal">
             {career.matchExplanation || "Matches your academic preferences and industry interest vectors."}
           </p>
         </div>
 
-        <Separator className="bg-[rgba(225,220,201,0.08)]" />
+        <Separator />
 
         {/* Details snippet */}
         <div className="space-y-1">
-          <p className="text-[9px] font-sans font-bold text-[rgba(225,220,201,0.4)] uppercase tracking-widest">Leading Majors</p>
+          <p className="text-[9px] font-sans font-bold text-muted uppercase tracking-widest">Leading Majors</p>
           <div className="flex flex-wrap gap-1">
             {career.relatedMajors.slice(0, 2).map((major) => (
               <Badge key={major} tone="slate" className="text-[9px] font-bold py-0.5 px-2">
@@ -139,14 +139,14 @@ export function CareerCard({
               </Badge>
             ))}
             {career.relatedMajors.length > 2 && (
-              <span className="text-[9px] text-[rgba(225,220,201,0.45)] font-bold ml-1">+{career.relatedMajors.length - 2} more</span>
+              <span className="text-[9px] text-muted font-bold ml-1">+{career.relatedMajors.length - 2} more</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-3 mt-4 border-t border-[rgba(225,220,201,0.06)]">
-        <span className="text-[10px] text-[rgba(225,220,201,0.55)] font-sans font-semibold">
+      <div className="flex items-center justify-between pt-3 mt-4 border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.06)]">
+        <span className="text-[10px] text-muted font-sans font-semibold">
           Demand: {career.projectedDemand ? career.projectedDemand.split(" ").slice(0, 2).join(" ") : "Growing"}
         </span>
         <button 
@@ -154,7 +154,7 @@ export function CareerCard({
             e.stopPropagation();
             if (onSelect) onSelect();
           }}
-          className="text-xs font-sans font-bold text-[#E1DCC9] hover:text-[#FFFFFF] flex items-center gap-1 transition-colors duration-150"
+          className="text-xs font-sans font-bold text-[#4C43CD] hover:text-[#3930B8] dark:text-[#E1DCC9] dark:hover:text-[#FFFFFF] flex items-center gap-1 transition-colors duration-150"
         >
           View Career Path <ArrowRight size={13} />
         </button>

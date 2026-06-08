@@ -95,12 +95,12 @@ export function KanbanColumn({
 
   return (
     <div className={cn("p-4 rounded-2xl border flex flex-col h-full min-h-[500px]", config.bg)}>
-      <div className="mb-4 flex items-center justify-between px-1.5 pb-2 border-b border-slate-100">
+      <div className="mb-4 flex items-center justify-between px-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <span className={cn("size-2 rounded-full", config.accent)} />
-          <h3 className="font-extrabold text-slate-800 text-sm tracking-wide">{status}</h3>
+          <h3 className="font-extrabold text-slate-800 dark:text-white text-sm tracking-wide">{status}</h3>
         </div>
-        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white shadow-sm border text-slate-500">
+        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-[#1E293B] shadow-sm border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
           {apps.length}
         </span>
       </div>
@@ -118,7 +118,7 @@ export function KanbanColumn({
           />
         ))}
         {apps.length === 0 && (
-          <div className="border border-dashed border-slate-200/80 rounded-2xl py-12 text-center text-xs text-slate-400 font-bold bg-white/40 flex flex-col items-center justify-center gap-2 flex-1">
+          <div className="border border-dashed border-slate-200/80 dark:border-slate-850/80 rounded-2xl py-12 text-center text-xs text-slate-400 font-bold bg-white/40 dark:bg-black/10 flex flex-col items-center justify-center gap-2 flex-1">
             <Building2 size={24} className="text-slate-300" />
             <span>No schools here</span>
           </div>

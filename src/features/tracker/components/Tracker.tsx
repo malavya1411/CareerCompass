@@ -62,45 +62,47 @@ export function Tracker() {
 
       {/* Stats row */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="p-5 border border-slate-100 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-blue-200/60 transition-all duration-300 flex items-center justify-between group">
+        <Card className="p-5 border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1E293B] shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-blue-200/60 dark:hover:border-blue-900/40 transition-all duration-300 flex items-center justify-between group">
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-semibold">Colleges Tracked</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colleges Tracked</p>
             <p className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">{stats.total}</p>
           </div>
-          <span className="grid size-12 place-items-center rounded-xl bg-blue-50 text-blue-600 group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm shadow-blue-500/5">
+          <span className="grid size-12 place-items-center rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm shadow-blue-500/5">
             <Building2 size={24} />
           </span>
         </Card>
 
-        <Card className="p-5 border border-slate-100 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-amber-200/60 transition-all duration-300 flex items-center justify-between group">
+        <Card className="p-5 border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1E293B] shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-amber-200/60 dark:hover:border-amber-900/40 transition-all duration-300 flex items-center justify-between group">
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-semibold">Deadlines This Month</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Deadlines This Month</p>
             <p className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">{stats.deadlinesThisMonth}</p>
           </div>
-          <span className="grid size-12 place-items-center rounded-xl bg-amber-50 text-amber-600 group-hover:bg-gradient-to-br group-hover:from-amber-500 group-hover:to-orange-600 group-hover:text-white transition-all duration-300 shadow-sm shadow-amber-500/5">
+          <span className="grid size-12 place-items-center rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 group-hover:bg-gradient-to-br group-hover:from-amber-500 group-hover:to-orange-600 group-hover:text-white transition-all duration-300 shadow-sm shadow-amber-500/5">
             <Calendar size={24} />
           </span>
         </Card>
 
-        <Card className="p-5 border border-slate-100 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-purple-200/60 transition-all duration-300 flex items-center justify-between group">
+        <Card className="p-5 border border-slate-100 dark:border-slate-800 bg-white dark:bg-[#1E293B] shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-purple-200/60 dark:hover:border-purple-900/40 transition-all duration-300 flex items-center justify-between group">
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-semibold">Submitted Applications</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Submitted Applications</p>
             <p className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">{stats.submitted}</p>
           </div>
-          <span className="grid size-12 place-items-center rounded-xl bg-purple-50 text-purple-600 group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm shadow-purple-500/5">
+          <span className="grid size-12 place-items-center rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm shadow-purple-500/5">
             <Check size={24} />
           </span>
         </Card>
       </div>
 
       {/* Top Bar with view toggles & add button */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-100 shadow-sm mt-2">
-        <div className="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#1E293B] p-3 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm mt-2">
+        <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl w-full sm:w-auto">
           <button
             onClick={() => setViewMode("kanban")}
             className={cn(
               "flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all flex-1 sm:flex-none",
-              viewMode === "kanban" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-950"
+              viewMode === "kanban"
+                ? "bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-950 dark:text-[rgba(225,220,201,0.6)] dark:hover:text-white"
             )}
           >
             <LayoutDashboard size={14} /> Kanban Board
@@ -109,7 +111,9 @@ export function Tracker() {
             onClick={() => setViewMode("calendar")}
             className={cn(
               "flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all flex-1 sm:flex-none",
-              viewMode === "calendar" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-950"
+              viewMode === "calendar"
+                ? "bg-white dark:bg-[#111111] text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-950 dark:text-[rgba(225,220,201,0.6)] dark:hover:text-white"
             )}
           >
             <Calendar size={14} /> Deadline Calendar
