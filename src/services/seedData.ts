@@ -1,6 +1,7 @@
 import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import { db, firebaseReady } from "./firebase";
 import type { Career, College } from "../shared/types/types";
+import parsedColleges from "./collegesData.json";
 
 export const careerSeeds: Career[] = [
   {
@@ -213,7 +214,7 @@ export const careerSeeds: Career[] = [
   }
 ];
 
-export const collegeSeeds: College[] = [
+const rawCollegeSeeds: College[] = [
   {
     id: "iit-bombay",
     name: "IIT Bombay",
@@ -412,6 +413,13 @@ export const collegeSeeds: College[] = [
     admissionsSatMedian: 1460,
     whyRecommended: "Strong engineering alternative with competitive match score; fits your sports credentials and coding background."
   }
+];
+
+export const collegeSeeds: College[] = [
+  ...rawCollegeSeeds,
+  ...(parsedColleges as College[]).filter(
+    pc => !rawCollegeSeeds.some(c => c.id === pc.id || c.name.toLowerCase() === pc.name.toLowerCase())
+  )
 ];
 
 export async function seedDataIfNeeded() {
