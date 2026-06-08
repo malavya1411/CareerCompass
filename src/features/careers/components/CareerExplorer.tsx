@@ -93,9 +93,9 @@ export function CareerExplorer() {
       {/* Search Toolbar */}
       <Toolbar>
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" size={18} />
+          <Search className="absolute left-3.5 top-3 text-muted" size={16} />
           <Input 
-            className="pl-10 bg-white dark:bg-[#1E293B] border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white" 
+            className="pl-10" 
             placeholder="Search careers by title, descriptions, or core skills" 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 

@@ -30,7 +30,7 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn("h-10 w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] px-3.5 text-sm text-[#111111] outline-none transition-all duration-200 placeholder:text-[#8B8B8B] focus:border-[#4C43CD] focus:ring-4 focus:ring-[#4C43CD]/10 dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111] dark:text-white dark:placeholder:text-[rgba(225,220,201,0.3)] dark:focus:border-[#412D15] dark:focus:ring-[#412D15]/20", className)} {...props} />;
+  return <input className={cn("h-10 w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] px-3.5 text-sm text-[#111111] outline-none transition-all duration-200 placeholder:text-[#8B8B8B] focus:border-[#4C43CD] focus:ring-4 focus:ring-[#4C43CD]/10 dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111] dark:text-white dark:placeholder:text-[rgba(225,220,201,0.5)] dark:focus:border-[#412D15] dark:focus:ring-[#412D15]/20", className)} {...props} />;
 }
 
 export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
@@ -77,5 +77,5 @@ export function Field({ label, children, error }: { label: string; children: Rea
 }
 
 export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={cn("w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] px-3.5 py-2.5 text-sm text-[#111111] outline-none transition-all duration-200 placeholder:text-[#8B8B8B] focus:border-[#4C43CD] focus:ring-4 focus:ring-[#4C43CD]/10 resize-none dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111] dark:text-white dark:placeholder:text-[rgba(225,220,201,0.3)] dark:focus:border-[#412D15] dark:focus:ring-[#412D15]/20", className)} {...props} />;
+  return <textarea className={cn("w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FBFAF2] px-3.5 py-2.5 text-sm text-[#111111] outline-none transition-all duration-200 placeholder:text-[#8B8B8B] focus:border-[#4C43CD] focus:ring-4 focus:ring-[#4C43CD]/10 resize-none dark:border-[rgba(225,220,201,0.08)] dark:bg-[#111111] dark:text-white dark:placeholder:text-[rgba(225,220,201,0.5)] dark:focus:border-[#412D15] dark:focus:ring-[#412D15]/20", className)} {...props} />;
 }
