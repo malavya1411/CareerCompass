@@ -280,7 +280,7 @@ export function Dashboard() {
                 ["Top Match", recommendedColleges[0]?.name || "TBD"],
                 ["Applications", applications.length],
               ].map(([label, value]) => (
-                <div key={label} className="border-b border-[rgba(0,0,0,0.08)] py-4 sm:border-b-0 sm:border-r sm:pr-4 sm:last:border-r-0 dark:border-[rgba(225,220,201,0.08)]">
+                <div key={label} className="border-b border-[rgba(0,0,0,0.08)] py-4 sm:border-b-0 sm:border-r sm:px-4 sm:first:pl-0 sm:last:pr-0 sm:last:border-r-0 dark:border-[rgba(225,220,201,0.08)]">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-[#8B8B8B] dark:text-[rgba(225,220,201,0.45)]">{label}</p>
                   <p className="mt-2 truncate font-number text-xl font-semibold text-[#111111] dark:text-[#F5F2EA]" title={String(value)}>{value}</p>
                 </div>
