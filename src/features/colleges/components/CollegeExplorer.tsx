@@ -482,21 +482,19 @@ export function CollegeExplorer() {
 
       {createPortal(
         <>
-          {/* Slide-over Drawer Backdrop overlay */}
+          {/* Centered Modal Panel Overlay */}
           {showDrawer && (
             <div 
-              className="fixed inset-0 bg-[#000000]/60 z-40 backdrop-blur-sm transition-opacity duration-300"
-              onClick={() => setShowDrawer(false)}
-            />
-          )}
-
-          {/* Slide-over Drawer Panel */}
-          <div 
-            className={cn(
-              "fixed inset-y-0 right-0 z-50 w-[420px] bg-[#FBFAF2] dark:bg-[#111111] border-l border-[rgba(0,0,0,0.08)] dark:border-l-[rgba(225,220,201,0.08)] shadow-[0px_0px_48px_rgba(0,0,0,0.15)] dark:shadow-[0px_0px_48px_rgba(0,0,0,0.8)] transform transition-transform duration-300 ease-in-out flex flex-col justify-between text-left",
-              showDrawer ? "translate-x-0" : "translate-x-full invisible pointer-events-none"
-            )}
-          >
+              className="fixed inset-0 bg-slate-950/50 z-50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center p-4 modal-overlay"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setShowDrawer(false);
+                }
+              }}
+            >
+              <div 
+                className="w-full max-w-[460px] bg-[#FBFAF2] dark:bg-[#111111] border border-[rgba(0,0,0,0.08)] dark:border-[rgba(225,220,201,0.08)] rounded-2xl shadow-[0px_0px_48px_rgba(0,0,0,0.15)] dark:shadow-[0px_0px_48px_rgba(0,0,0,0.8)] flex flex-col justify-between text-left max-h-[85vh] overflow-hidden modal-content"
+              >
             {selectedCollege && fitScoreDetails ? (
               <>
                 {/* Drawer Header */}
@@ -697,7 +695,9 @@ export function CollegeExplorer() {
               <div className="p-6 text-center text-secondary text-xs italic">Select a college to view AI insights.</div>
             )}
           </div>
-        </>,
+        </div>
+      )}
+    </>,
         document.body
       )}
     </Page>
